@@ -1,0 +1,65 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <rect width="400" height="400" rx="40" fill="url(#bg_gradient)"/>
+  <rect width="400" height="400" rx="40" fill="url(#pattern_glow)" opacity="0.6"/>
+  
+  <!-- Subtle decorative ambient circles -->
+  <circle cx="200" cy="140" r="110" fill="url(#head_glow)" opacity="0.4" filter="blur(20px)"/>
+  
+  <!-- Stylized avatar silhouette -->
+  <g transform="translate(0, 10)">
+    <!-- Head -->
+    <circle cx="200" cy="150" r="62" fill="url(#avatar_grad)" />
+    
+    <!-- Glasses / Modern developer accent -->
+    <rect x="162" y="142" width="28" height="18" rx="6" stroke="#ffffff" stroke-width="4" stroke-opacity="0.9" fill="none"/>
+    <rect x="210" y="142" width="28" height="18" rx="6" stroke="#ffffff" stroke-width="4" stroke-opacity="0.9" fill="none"/>
+    <line x1="190" y1="151" x2="210" y2="151" stroke="#ffffff" stroke-width="4" stroke-opacity="0.9"/>
+    <path d="M152 148L162 150" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-opacity="0.7"/>
+    <path d="M238 150L248 148" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-opacity="0.7"/>
+
+    <!-- Shoulders / Torso -->
+    <path d="M110 320 C110 242, 148 230, 200 230 C252 230, 290 242, 290 320 Z" fill="url(#torso_grad)" />
+    
+    <!-- Hoodie / Collar notch -->
+    <path d="M182 230 L200 258 L218 230" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.4" fill="none"/>
+    
+    <!-- Code / Student Badge Badge at bottom right of avatar -->
+    <g transform="translate(250, 260)">
+      <rect width="64" height="64" rx="20" fill="#4F46E5" stroke="#818CF8" stroke-width="3" filter="drop-shadow(0 4px 12px rgba(79, 70, 229, 0.4))"/>
+      <path d="M24 26L16 32L24 38" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M40 26L48 32L40 38" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M34 22L30 42" stroke="#A5B4FC" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Gradients Definition -->
+  <defs>
+    <linearGradient id="bg_gradient" x1="0" y1="0" x2="400" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E1B4B" />
+      <stop offset="50%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#090D16" />
+    </linearGradient>
+
+    <radialGradient id="pattern_glow" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="head_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#4F46E5" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="avatar_grad" x1="138" y1="88" x2="262" y2="212" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A5B4FC"/>
+      <stop offset="60%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#4338CA"/>
+    </linearGradient>
+
+    <linearGradient id="torso_grad" x1="110" y1="230" x2="290" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#312E81"/>
+    </linearGradient>
+  </defs>
+</svg>
