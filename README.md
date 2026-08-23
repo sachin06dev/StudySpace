@@ -49,7 +49,7 @@ Students often deal with fragmented study workflows: YouTube lecture tabs, scatt
 
 Experience StudySpace live:
 
-🔗 **[https://studyspace.vercel.app](https://studyspace.vercel.app)**
+🔗 **[https://studyspace-ebon.vercel.app](https://studyspace-ebon.vercel.app)**
 
 ---
 
