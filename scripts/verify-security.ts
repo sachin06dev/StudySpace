@@ -10,7 +10,7 @@
  * 6. Cloudflare R2 private credentials are never referenced in client code.
  */
 
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 
 const rootDir = process.cwd()
@@ -108,4 +108,118 @@ const callbackContent = readFileSync(join(rootDir, 'app/auth/callback/route.ts')
 assert(callbackContent.includes("rawNext.startsWith('/')"), 'OAuth callback validates relative redirect prefix')
 assert(callbackContent.includes("!rawNext.startsWith('//')"), 'OAuth callback blocks protocol-relative open redirects')
 
-console.log('\n=== All Automated Security Invariant Checks Completed ===\n')
+// 5. Environment File & Local Secret Protection
+console.log('\n5. Checking Local Environment Isolation...')
+
+
+const bannedEnvFiles = [
+  '.env',
+  '.env.local',
+  '.env.production',
+  '.env.development',
+  '.env.test',
+  '.env.staging',
+  'mobile/.env',
+]
+for (const envFile of bannedEnvFiles) {
+  assert(!existsSync(join(rootDir, envFile)), `No actual credential file ${envFile} exists in working tree`)
+}
+
+// Check .env.example contains only placeholders
+const envExamplePath = join(rootDir, '.env.example')
+if (existsSync(envExamplePath)) {
+  const envExample = readFileSync(envExamplePath, 'utf8')
+  const lines = envExample.split('\n')
+  let safePlaceholders = true
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const parts = trimmed.split('=')
+    if (parts.length >= 2) {
+      const val = parts.slice(1).join('=').trim()
+      // Allowed placeholder patterns
+      const isPlaceholder =
+        val === '' ||
+        val.startsWith('your_') ||
+        val.startsWith('your-') ||
+        val.startsWith('placeholder') ||
+        val.includes('placeholder') ||
+        val.includes('example.com') ||
+        val.startsWith('https://your-project') ||
+        val.startsWith('http://localhost')
+      if (!isPlaceholder && val.length > 20) {
+        safePlaceholders = false
+        console.error(`❌ Suspect non-placeholder value in .env.example for key ${parts[0]}`)
+      }
+    }
+  }
+  assert(safePlaceholders, '.env.example contains placeholder values only')
+}
+
+// 6. Recursive Secret Pattern Scan Across Tracked Source Files
+console.log('\n6. Scanning Repository Files for Accidental Secret Exposure...')
+const IGNORED_DIRS = new Set([
+  '.git',
+  '.next',
+  'node_modules',
+  '.dart_tool',
+  'build',
+  'dist',
+  'coverage',
+  '.vscode',
+  '.idea',
+])
+
+const IGNORED_FILES = new Set([
+  'package-lock.json',
+  '.package-lock.json',
+  'pubspec.lock',
+])
+
+const SECRET_PATTERNS: { name: string; regex: RegExp }[] = [
+  { name: 'Private Key Header', regex: /-----BEGIN (?:RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----/ },
+  { name: 'Google API Key', regex: /AIza[0-9A-Za-z-_]{35}/ },
+  { name: 'GitHub Token', regex: /gh[pousr]-[A-Za-z0-9_]{36,255}/ },
+  { name: 'Generic AWS Secret Pattern', regex: /(?:aws_secret_access_key|R2_SECRET_ACCESS_KEY)\s*[:=]\s*["'](?!(?:your|mock|placeholder|<))[A-Za-z0-9/+=]{40}["']/i },
+]
+
+let violationsFound = 0
+
+function scanDirectory(dir: string) {
+  const entries = readdirSync(dir)
+  for (const entry of entries) {
+    if (IGNORED_DIRS.has(entry)) continue
+    const fullPath = join(dir, entry)
+    const stat = statSync(fullPath)
+    if (stat.isDirectory()) {
+      scanDirectory(fullPath)
+    } else if (stat.isFile()) {
+      if (IGNORED_FILES.has(entry)) continue
+      // Only scan code, text, config, and script files
+      if (/\.(ts|tsx|js|mjs|cjs|dart|json|yaml|yml|md|sql|sh|ps1|toml|gradle|properties)$/i.test(entry)) {
+        try {
+          const content = readFileSync(fullPath, 'utf8')
+          const lines = content.split('\n')
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i]
+            for (const { name, regex } of SECRET_PATTERNS) {
+              if (regex.test(line)) {
+                // Ignore self test or verification script references
+                if (fullPath.includes('verify-security.ts')) continue
+                console.error(`❌ [REDACTED SECRET DETECTED] Type: ${name} in ${fullPath.replace(rootDir, '')}:${i + 1}`)
+                violationsFound++
+              }
+            }
+          }
+        } catch {
+          // Ignore binary or unreadable files
+        }
+      }
+    }
+  }
+}
+
+scanDirectory(rootDir)
+assert(violationsFound === 0, `No hardcoded high-risk credentials detected in repository files (violations: ${violationsFound})`)
+
+console.log('\n=== All Automated Security Invariant Checks Completed Successfully ===\n')

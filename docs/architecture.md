@@ -333,7 +333,7 @@ sequenceDiagram
 | `mobile/` | Android App | Flutter client with offline SQLite cache, sync engine, local notifications, and Android build scripts. |
 | `supabase/` | Database Schema | SQL migrations, initial DDL schemas (`schema.sql`), performance indexes, and RLS policies. |
 | `public/` | Static Assets | Brand identity marks, dark/light production screenshots, optimized WebP app previews, and icons. |
-| `docs/` | Documentation | Architecture specifications, Android release operations (`android-release.md`), and design blueprints (`docs/design/`). |
+| `docs/` | Documentation | Architecture specifications, Android release operations (`android-release.md`), and developer setup guides (`development.md`). |
 
 ---
 
