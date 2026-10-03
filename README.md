@@ -1,188 +1,457 @@
-# StudySpace
+<div align="center">
 
-Productivity workspace for learners.
+  <img src="public/branding/studyspace-logo-horizontal.png" alt="StudySpace Logo" width="380" />
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.3.1-black?logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.2.8-blue?logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%7C%20DB%20%7C%20Storage-3ecf8e?logo=supabase)](https://supabase.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+  <p><strong>The unified academic workspace and learning ecosystem for students.</strong></p>
 
----
+  <p>
+    Timetable scheduling • Attendance intelligence • AI timetable scanner • Lecture hub with timestamped notes • Pomodoro focus suite • Private document vault • 365-day study analytics • Native Android companion
+  </p>
 
-## Overview
+  <p>
+    <a href="https://studyspace4u.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-studyspace4u.vercel.app-7c3aed?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" /></a>
+    <a href="https://github.com/sachin06dev/StudySpace/releases"><img src="https://img.shields.io/badge/Android_APK-v1.1.6-3b82f6?style=for-the-badge&logo=android&logoColor=white" alt="Android APK" /></a>
+  </p>
 
-Students often deal with fragmented study workflows: YouTube lecture tabs, scattered notes, separate task managers, external Pomodoro timers, study resources, and documents stored across different places.
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-16.3-black?logo=next.js" alt="Next.js 16" />
+    <img src="https://img.shields.io/badge/React-19.2-blue?logo=react" alt="React 19" />
+    <img src="https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss" alt="Tailwind CSS v4" />
+    <img src="https://img.shields.io/badge/Supabase-PostgreSQL_%7C_Auth_%7C_Realtime-3ecf8e?logo=supabase" alt="Supabase" />
+    <img src="https://img.shields.io/badge/Cloudflare-R2_Storage-f38020?logo=cloudflare" alt="Cloudflare R2" />
+    <img src="https://img.shields.io/badge/Flutter-Android_API_21--34-02569B?logo=flutter" alt="Flutter Android" />
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" />
+  </p>
 
-**StudySpace** brings lecture viewing, interactive timestamped note-taking, task management, Pomodoro focus tracking, resource management, private document storage, and study analytics into a single, cohesive learning and productivity workspace.
-
----
-
-## Features
-
-- **Dashboard**: Unified overview with personalized greeting, today's study progress, active task summary, recent Pomodoro sessions, continue-learning shortcuts, quick actions, and a 365-day study consistency heatmap.
-- **Tasks**: Full-featured task manager supporting priorities (Low, Medium, High), categories, due dates, completion toggles, status filters, and real-time task counts.
-- **Pomodoro**: Customizable focus and break timer with audio chimes (Web Audio API), auto-start breaks, persistent state across in-app navigation, and automatic study time logging.
-- **Videos**: YouTube video hub with automatic server-side metadata retrieval (title, channel, duration, thumbnail), playback progress tracking, last-watched timestamps, and keyboard shortcuts.
-- **Playlists**: Import entire YouTube playlists with batched server-side video fetching, overall progress calculation, and playlist item tracking.
-- **Resources**: Organize, categorize, and search web articles, documentation, tutorials, and external study links with automatic favicon fetching.
-- **Notes**: Capture timestamped study notes during video playback; clicking a timestamp jumps the video to the corresponding second. Access and search notes across videos from a central library.
-- **Documents**: Securely upload, categorize, and view private study PDFs and documents (up to 50MB) through Supabase Storage with short-lived signed URLs and user isolation. Document uploads use standard file pickers without camera or microphone permissions.
-- **Analytics**: Visualize daily and weekly study hours, Pomodoro completion counts, task velocity, weekly focus trends, milestone achievements, and a 365-day study activity heatmap.
+</div>
 
 ---
 
-## Tech Stack
-
-- **Framework**: [Next.js](https://nextjs.org/) (App Router, Server Components & Server Actions)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **UI & Styling**: [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [next-themes](https://github.com/pacocoursey/next-themes) (Dark/Light mode)
-- **Database & Auth**: [Supabase](https://supabase.com/) (PostgreSQL with Row Level Security & Supabase Auth)
-- **File Storage**: [Supabase Storage](https://supabase.com/storage) (private `study-documents` bucket with signed URLs)
-- **External APIs**: [YouTube Data API v3](https://developers.google.com/youtube/v3/) (server-only metadata fetching)
-- **Deployment**: [Vercel](https://vercel.com/) (Analytics & Speed Insights integrated)
+<div align="center">
+  <img src="public/screenshots/dark/dashboard.png" alt="StudySpace Dashboard Preview" width="100%" style="border-radius: 12px; border: 1px solid #27272a;" />
+</div>
 
 ---
 
-## Live Demo
+## The Problem: College Life is Scattered
 
-Experience StudySpace live:
+University students and self-directed learners routinely juggle fragmented workflows across half a dozen disconnected tools:
 
-🔗 **[https://studyspace4u.vercel.app](https://studyspace4u.vercel.app)**
+- **Lecture videos** are watched on YouTube, lost inside algorithmic feeds and endless distraction rabbit holes.
+- **Notes** are scribbled across loose scratchpads, chat messages, or separate note apps with zero connection to the specific timestamp of the lecture.
+- **Tasks & assignments** sit in generic to-do apps with no awareness of the academic calendar or subjects.
+- **Focus timers** live on phone widgets that get killed in the background or interrupted during browser navigation.
+- **Attendance & timetables** are checked manually on university portal PDFs, leading to panic calculations before semester exams to determine whether you can safely miss a lecture.
+- **Course documents & lecture slides** are buried in WhatsApp group chats and lost download folders.
+
+**StudySpace unifies this entire academic lifecycle into one cohesive, distraction-free learning operating system across Web and Android.**
+
+---
+
+## The Solution: One Unified Workspace
+
+StudySpace bridges the gap between daily university logistics and deep, focused study sessions. Whether you are reviewing weekly attendance margins, scanning your physical timetable with your phone camera, watching a 2-hour university lecture with timestamped seeking notes, or analyzing your 365-day study consistency, StudySpace provides a single, synchronized hub.
+
+---
+
+## Core Features Across the Student Workflow
+
+### 1. Academic Attendance & Timetable Intelligence
+- **Weekly Schedule Engine**: Configure recurring weekly slots (Monday to Sunday) with start/end times, faculty, room numbers, and subject course codes.
+- **Ad-Hoc Schedule Exceptions**: Log cancelled lectures, reschedule classes to replacement windows, or inject extra revision sessions without breaking your recurring baseline.
+- **Mathematical Bunk Allowance & Recovery Engine** (`lib/attendance/calculations.ts`):
+  - **Safe Bunk Allowance ($M$)**: Exactly how many classes you can skip while remaining at or above your target percentage (e.g. 75% or 85%).
+  - **Consecutive Recovery Requirement ($R$)**: Exactly how many consecutive classes you must attend to climb back to good academic standing.
+  - **Tri-State Risk Machine**: Real-time visual status tags (**SAFE**, **WARNING**, **CRITICAL**).
+- **Daily Class Timeline**: Dynamically resolves today's active schedule, taking into account cancellations and room shifts.
+
+### 2. Multimodal AI Timetable OCR Scanner
+- **Instant Photo-to-Schedule Conversion**: Photograph or screenshot a printed college timetable; Google Gemini 2.0 / 1.5 Flash vision extracts days, time slots, course names, and faculties into structured JSON.
+- **In-Memory Privacy**: Timetable image buffers are processed strictly in ephemeral memory and discarded immediately; no student photos are stored on disk.
+- **Interactive Ingestion Modal**: Review and edit parsed slots before batch-saving them to PostgreSQL.
+
+### 3. YouTube Lecture Hub & Timestamped Notes
+- **Server-Side Metadata Retrieval**: Pasting any YouTube URL securely retrieves high-res thumbnails, durations, channel names, and titles via Google YouTube Data API v3 on the server.
+- **Global Catalog Deduplication**: Shared courses are deduplicated in `youtube_videos`, saving storage while keeping individual watch progress private in `saved_videos`.
+- **Bidirectional Seeking Notes**: Take notes while a lecture plays; clicking any timestamp tag (e.g. `[14:28]`) jumps the player directly to that second.
+
+### 4. Pomodoro Focus Suite
+- **Navigation-Persistent Chronometer**: Managed at the AppShell level (`TimerProvider`), so switching between Dashboard, Attendance, Tasks, and Videos never resets or interrupts your countdown.
+- **Zero-Latency Web Audio API Synthesis**: Audio chime alerts are synthesized directly in the browser using the Web Audio API (`OscillatorNode` + `GainNode`), guaranteeing reliable chimes without network audio loading.
+- **Automatic Lifecycle Logging**: Completed and interrupted focus sessions log automatically to `pomodoro_sessions`.
+
+### 5. Academic Task & Resource Management
+- **Subject-Aware Task Planner**: Manage assignments, lab reports, and exam prep with priorities (Low, Medium, High), due dates, and completion tracking.
+- **Web Resource Library**: Bookmark documentation, tutorials, and syllabus links with automatic favicon resolution.
+- **Private Document Vault**: Upload and view lecture PDFs and study slides (up to 50MB) secured with private storage and 10-minute short-lived presigned URLs.
+
+### 6. Analytics & 365-Day Consistency Engine
+- **365-Day Study Activity Heatmap**: Visual activity grid mapping study volume across 5 tiers (Level 0 to Level 4) with a 20-minute daily qualifying threshold.
+- **100-Point Consistency Score Algorithm**: Algorithmic consistency index factoring 30-day active days (40 pts), current streak (35 pts), and weekly goal pace (25 pts).
+- **Diurnal Rhythm Breakdown**: Dissects focus sessions into Morning (05:00–12:00), Afternoon (12:00–17:00), Evening (17:00–21:00), and Night (21:00–05:00) segments.
+
+---
+
+## Web + Android Companion Ecosystem
+
+StudySpace is not just a responsive website—it includes a first-class native **Flutter Android companion application** located in [`mobile/`](mobile/).
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                   STUDYSPACE CROSS-PLATFORM SYSTEM                     │
+└────────────────────────────────────────────────────────────────────────┘
+
+            NEXT.JS 16 WEB APP                   FLUTTER ANDROID APP
+      (React 19 Server Components)               (Native Android API 21-34)
+                   │                                         │
+                   ▼                                         ▼
+            PostgREST & Actions                      Offline SQLite Cache
+                   │                                (studyspace_offline.db)
+                   │                                         │
+                   │                                         ▼
+                   │                                    SyncEngine
+                   │                                (Idempotent Queue)
+                   │                                         │
+                   └───────────────────┬─────────────────────┘
+                                       │
+                                       ▼
+                             SUPABASE POSTGRESQL
+                       (Strict Row Level Security &
+                          Realtime CDC Replication)
+```
+
+- **Offline-First SQLite Architecture**: The Android app reads and writes from a local SQLite database (`studyspace_offline.db`), delivering `<16ms` touch-to-render performance.
+- **Instant Haptic Marking**: Tapping `[ ✓ Present ]` marks attendance immediately with tactile vibration feedback.
+- **Idempotent Background Sync**: Mutations are queued in `sync_queue` with deterministic keys (`att_${userId}_${subjectId}_${date}_${time}`) and automatically synced via `SyncEngine` upon network reconnect.
+- **Local Device Notifications**: 07:30 daily morning schedule digest, 10-minute pre-class reminders, and post-class attendance verification prompts running entirely on-device without external push servers.
+
+---
+
+## Visual Tour & Interface Showcase
+
+<div align="center">
+  <table>
+    <tr>
+      <td width="50%">
+        <img src="public/screenshots/dark/attendance-master.png" alt="Attendance Intelligence & Bunk Calculator" />
+        <p align="center"><em>Attendance Master & Safe Bunk Allowance</em></p>
+      </td>
+      <td width="50%">
+        <img src="public/screenshots/dark/timetable.png" alt="Weekly Timetable Grid" />
+        <p align="center"><em>Weekly Timetable Grid & Schedule Resolution</em></p>
+      </td>
+    </tr>
+    <tr>
+      <td width="50%">
+        <img src="public/screenshots/dark/videos-player.png" alt="YouTube Lecture Hub with Timestamped Notes" />
+        <p align="center"><em>Lecture Hub with Contextual Timestamped Notes</em></p>
+      </td>
+      <td width="50%">
+        <img src="public/screenshots/dark/analytics-full.png" alt="365-Day Study Analytics & Heatmap" />
+        <p align="center"><em>365-Day Heatmap & Consistency Score (0–100)</em></p>
+      </td>
+    </tr>
+    <tr>
+      <td width="50%">
+        <img src="public/screenshots/dark/pomodoro.png" alt="Pomodoro Focus Chronometer" />
+        <p align="center"><em>Navigation-Persistent Pomodoro Focus Suite</em></p>
+      </td>
+      <td width="50%">
+        <img src="public/screenshots/dark/documents.png" alt="Private Study Document Vault" />
+        <p align="center"><em>Private Study Document Vault (Presigned URLs)</em></p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+### Mobile Experience (Android Native)
+
+<div align="center">
+  <table border="0">
+    <tr>
+      <td align="center"><img src="public/screenshots/mobile/home.webp" width="210" /><br /><sub>Home Digest</sub></td>
+      <td align="center"><img src="public/screenshots/mobile/attendance.webp" width="210" /><br /><sub>Instant Attendance</sub></td>
+      <td align="center"><img src="public/screenshots/mobile/timetable.webp" width="210" /><br /><sub>Weekly Timetable</sub></td>
+      <td align="center"><img src="public/screenshots/mobile/analytics.webp" width="210" /><br /><sub>Mobile Analytics</sub></td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## System Architecture
+
+```mermaid
+graph TD
+    subgraph Clients["Clients"]
+        Browser["Desktop & Mobile Web<br/>(React 19 / Next.js 16)"]
+        AndroidApp["Android Companion<br/>(Flutter / Dart)"]
+    end
+
+    subgraph AppServer["Next.js Server (Node.js)"]
+        Middleware["Session Middleware<br/>(@supabase/ssr)"]
+        RSC["React Server Components<br/>(Streaming & SSR)"]
+        ServerActions["Server Actions<br/>('use server' Mutations)"]
+        ApiRoutes["API Routes<br/>(/api/timetable/scan, /api/release/*)"]
+        DAL["Data Access Layer<br/>(lib/data/*.ts)"]
+    end
+
+    subgraph Backend["Database & Storage (Supabase & Cloudflare)"]
+        Postgres["PostgreSQL 15+ Engine"]
+        RLS["Row Level Security<br/>(user_id = auth.uid())"]
+        SupaStorage["Supabase Storage<br/>(study-documents)"]
+        R2Storage["Cloudflare R2<br/>(Zero-Egress Object Vault)"]
+    end
+
+    subgraph AIExternal["External AI & APIs"]
+        GeminiVision["Google Gemini 2.0 / 1.5 Flash<br/>(Timetable Vision OCR)"]
+        YouTubeAPI["YouTube Data API v3<br/>(Server Metadata)"]
+    end
+
+    Browser --> Middleware
+    Middleware --> RSC
+    Middleware --> ServerActions
+    AndroidApp -->|Bearer Auth| ApiRoutes
+    AndroidApp -->|PostgREST| Postgres
+
+    RSC --> DAL
+    ServerActions --> DAL
+    ApiRoutes --> DAL
+
+    DAL --> Postgres
+    Postgres --- RLS
+
+    DAL --> SupaStorage
+    DAL --> R2Storage
+    ApiRoutes --> GeminiVision
+    RSC --> YouTubeAPI
+```
+
+---
+
+## Technology Stack
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Web Framework** | [Next.js 16](https://nextjs.org/) (App Router) | Server-side rendering, streaming RSCs, and Server Actions |
+| **Frontend Runtime** | [React 19](https://react.dev/) | Component architecture, optimistic UI, hooks, and transitions |
+| **Language** | [TypeScript 5](https://www.typescriptlang.org/) | Strict static typing across models, actions, and API boundaries |
+| **Web Styling** | [Tailwind CSS v4](https://tailwindcss.com/) | Modern CSS variable theming with `@tailwindcss/postcss` |
+| **Database** | [PostgreSQL 15+](https://www.postgresql.org/) via [Supabase](https://supabase.com/) | Relational database with strict Row Level Security (RLS) |
+| **Authentication** | [Supabase Auth](https://supabase.com/auth) | PKCE cookie sessions, JWT verification, and user management |
+| **Object Storage** | [Supabase Storage](https://supabase.com/storage) + [Cloudflare R2](https://www.cloudflare.com/developer-platform/r2/) | Dual storage: private user buckets + zero-egress S3 vault |
+| **Mobile Client** | [Flutter 3.19+](https://flutter.dev/) (Dart 3.3+) | Cross-platform Android client targeting API levels 21–34 |
+| **Local Persistence** | [SQLite](https://www.sqlite.org/) via `sqflite` | Offline-first local mobile database with sync queue |
+| **External APIs** | [YouTube Data API v3](https://developers.google.com/youtube/v3) | Server-only video and playlist metadata resolution |
+| **Multimodal AI** | [Google Gemini](https://ai.google.dev/) (Flash Vision) | Structured JSON extraction from timetable photos |
+| **Hosting & CI/CD** | [Vercel](https://vercel.com/) + [GitHub Actions](https://github.com/features/actions) | Global edge deployment and automated Android APK builds |
+
+---
+
+## Engineering Highlights
+
+### 1. Zero Row-Level Security Bypass
+Every user-owned table (`tasks`, `attendance_records`, `timetable_slots`, `timetable_exceptions`, `pomodoro_sessions`, `documents`, `notes`) enforces `user_id = auth.uid()` at the PostgreSQL kernel level. The `service_role` key is **never** bundled or referenced in client-side bundles.
+
+### 2. Ephemeral Multimodal AI Vision
+The AI timetable scanner (`/api/timetable/scan`) accepts photo uploads and streams bytes in-memory to Google Gemini Flash. The image is parsed against a strict schema and discarded immediately. No student photos or camera captures are ever stored on disk or in cloud buckets.
+
+### 3. Dual Object Storage with Zero Egress
+Small and standard document uploads utilize Supabase Storage with folder-level RLS policies. Large study assets and public Android release APKs utilize Cloudflare R2 via AWS S3 SDK presigned URLs (`@aws-sdk/s3-request-presigner`), eliminating bandwidth egress fees.
+
+### 4. Navigation-Persistent Focus Chronometer
+Instead of isolating the timer inside the Pomodoro page, `TimerProvider` is mounted at the App Router layout boundary (`app/(app)/layout.tsx`). Students can explore resources, mark attendance, or manage tasks while their focus session ticks in the background.
+
+### 5. Automated Android Release Pipeline
+Every tagged release triggers GitHub Actions workflows (`.github/workflows/release-android.yml`) that compile split-per-abi Android APKs, sign artifacts, generate SHA-256 hashes, and upload releases directly to Cloudflare R2. The web application checks `/api/release/latest` and serves in-app update notifications.
+
+---
+
+## Repository Structure
+
+```
+StudySpace/
+├── app/                                 # Next.js 16 App Router root
+│   ├── (auth)/                          # Unauthenticated route group (login, signup)
+│   ├── (app)/                           # Protected application route group (auth session verified)
+│   │   ├── dashboard/                   # Aggregated overview, live timetable strip, quick actions
+│   │   ├── attendance/                  # Attendance tracking, risk cards, subject drill-downs
+│   │   ├── timetable/                   # Weekly timetable grid, semester manager, AI scan modal
+│   │   ├── tasks/                       # Task planner with priority and status filters
+│   │   ├── pomodoro/                    # Fullscreen Pomodoro timer and session logs
+│   │   ├── videos/                      # YouTube lecture hub with timestamped notes
+│   │   ├── playlists/                   # YouTube playlist importer and sequential player
+│   │   ├── notes/                       # Centralized timestamp notes library
+│   │   ├── resources/                   # Bookmarked web learning links
+│   │   ├── documents/                   # Private PDF & study documents vault
+│   │   ├── analytics/                   # 365-day heatmap, consistency score, study trends
+│   │   └── settings/                    # Preferences, timer durations, device management
+│   ├── api/                             # Server API routes
+│   │   ├── timetable/scan/              # Multimodal AI timetable OCR endpoint
+│   │   ├── release/latest/              # Mobile release manifest and update checker
+│   │   ├── download/android/            # Android APK direct download redirect
+│   │   └── user/                        # Privacy controls: export, delete-data, delete-account
+│   ├── layout.tsx                       # Root HTML layout with theme provider
+│   └── page.tsx                         # Public product showcase and landing experience
+│
+├── components/                          # React Component Library
+│   ├── attendance/                      # TodayClassesCard, SubjectAttendanceCard, HistoryModal...
+│   ├── timetable/                       # TimetableGrid, SlotModal, ScannedTimetableReview...
+│   ├── dashboard/                       # ContinueLearning, TaskList, MetricCard, LiveClock...
+│   ├── pomodoro/                        # PomodoroTimer, PomodoroSettings, CompletionModal...
+│   ├── videos/                          # VideoPlayer, TimestampNotesList, VideoCard...
+│   ├── landing/                         # ProductShowcaseSection, BunkSimulator, ThemeCompare...
+│   └── layout/                          # AppShell, AppSidebar, MobileHeader, MobileNavDrawer
+│
+├── lib/                                 # Domain Logic & Infrastructure
+│   ├── actions/                         # Next.js Server Actions ('use server')
+│   ├── ai/                              # Google Gemini multimodal timetable vision prompt & schema
+│   ├── attendance/                      # Bunk allowance, recovery calculations, daily class resolver
+│   ├── data/                            # Supabase PostgREST Data Access Layer (DAL)
+│   ├── pomodoro/                        # TimerContext store & Web Audio API synthesizer
+│   ├── storage/                         # Cloudflare R2 S3 client & presigned URL generators
+│   └── supabase/                        # Server, browser, and middleware Supabase client factories
+│
+├── mobile/                              # Flutter Android Application
+│   ├── lib/                             # Core SQLite helper, SyncEngine, attendance & timetable UI
+│   ├── android/                         # Android native project configuration (API 21-34)
+│   └── pubspec.yaml                     # Mobile dependencies (supabase_flutter, sqflite, provider)
+│
+├── supabase/                            # Database Schemas & Migrations
+│   ├── schema.sql                       # Complete initial DDL (13 tables, RLS policies, triggers)
+│   └── migrations/                      # Incremental migrations (attendance, R2, user devices)
+│
+├── public/                              # Static Assets
+│   ├── branding/                        # Official StudySpace marks and logos
+│   ├── screenshots/                     # Real production screenshots (dark, light, mobile)
+│   └── images/app/                      # High-resolution optimized application previews
+│
+├── docs/                                # Technical Documentation
+│   ├── architecture.md                  # Comprehensive system architecture & data flow
+│   ├── android-release.md               # Mobile release & Cloudflare R2 deployment operations
+│   └── design/                          # UI/UX design blueprints and component audits
+│
+├── SECURITY.md                          # Vulnerability reporting & security guidelines
+├── CONTRIBUTING.md                      # Development workflow and pull request guidelines
+└── CHANGELOG.md                         # Semantic version history and feature changelog
+```
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v20.x or later recommended)
-- [npm](https://www.npmjs.com/) (or yarn / pnpm)
-- A [Supabase](https://supabase.com/) project
-- A [Google Cloud](https://console.cloud.google.com/) project with YouTube Data API v3 enabled
+- [Node.js](https://nodejs.org/) (v20.x or later)
+- [npm](https://www.npmjs.com/) (v10.x or later)
+- A [Supabase](https://supabase.com/) account & project
+- *(Optional for lecture metadata)*: [Google Cloud YouTube Data API v3 key](https://console.cloud.google.com/)
+- *(Optional for AI timetable OCR)*: [Google Gemini API key](https://aistudio.google.com/)
+- *(Optional for mobile development)*: [Flutter SDK](https://flutter.dev/) (v3.19+) & Android SDK
 
 ### 1. Clone the Repository
-
 ```bash
 git clone https://github.com/sachin06dev/StudySpace.git
 cd StudySpace
 ```
 
-### 2. Install Dependencies
-
+### 2. Install Web Dependencies
 ```bash
 npm install
 ```
 
 ### 3. Configure Environment Variables
-
 Copy `.env.example` to `.env.local`:
-
 ```bash
 cp .env.example .env.local
 ```
 
-Fill in your configuration:
-
+Configure your credentials:
 ```ini
+# Supabase Configuration (Required)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-YOUTUBE_API_KEY=your-youtube-data-api-v3-key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-publishable-anon-key
+
+# YouTube Data API v3 (Required for Video Hub)
+YOUTUBE_API_KEY=your-google-cloud-youtube-key
+
+# Multimodal AI Timetable OCR (Optional)
+GEMINI_API_KEY=your-gemini-api-key
+
+# Cloudflare R2 Dual-Storage (Optional)
+R2_ACCOUNT_ID=your-cloudflare-account-id
+R2_ACCESS_KEY_ID=your-cloudflare-r2-access-key
+R2_SECRET_ACCESS_KEY=your-cloudflare-r2-secret-key
+R2_BUCKET_NAME=studyspace-documents
+
+# Canonical Site URL
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-### 4. Setup Database & Storage
+### 4. Initialize Database Schema
+1. Open your Supabase Dashboard and navigate to the **SQL Editor**.
+2. Run the script located at [`supabase/schema.sql`](supabase/schema.sql).
+3. Run the incremental migrations in [`supabase/migrations/`](supabase/migrations/) to provision attendance tables, semester constraints, and device sync tables.
 
-1. Navigate to your Supabase project's **SQL Editor**.
-2. Run the SQL script located at [`supabase/schema.sql`](supabase/schema.sql).
-3. This creates the application's database tables, enables Row Level Security (RLS) policies, provisions the private `study-documents` bucket, and configures user profile triggers.
-
-### 5. Run the Development Server
-
+### 5. Launch the Development Server
 ```bash
 npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
----
-
-## Environment Variables
-
-| Variable | Description | Exposure |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project API URL | Public (Client & Server) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous public API key | Public (Client & Server) |
-| `YOUTUBE_API_KEY` | Google Cloud API key with YouTube Data API v3 enabled | **Server-Only Secret** |
-| `NEXT_PUBLIC_SITE_URL` | Canonical site URL | Public (Optional) |
-
-See [`.env.example`](.env.example) for the required variable names.
+Open [http://localhost:3000](http://localhost:3000) to view StudySpace.
 
 ---
 
-## Project Structure
+## Running the Android Companion App
 
-```text
-studyspace/
-├── app/                        # Next.js App Router
-│   ├── (app)/                  # Authenticated workspace routes
-│   │   ├── analytics/          # Study analytics & heatmap
-│   │   ├── dashboard/          # Central dashboard view
-│   │   ├── documents/          # Private document storage
-│   │   ├── notes/              # Notes hub & video notes
-│   │   ├── playlists/          # YouTube playlists & details
-│   │   ├── pomodoro/           # Pomodoro timer & settings
-│   │   ├── resources/          # Web resource manager
-│   │   ├── settings/           # Profile & preference settings
-│   │   ├── tasks/              # Task management
-│   │   └── videos/             # YouTube video study player
-│   ├── (auth)/                 # Authentication pages
-│   ├── api/                    # Server-side API endpoints
-│   ├── layout.tsx              # Root layout
-│   └── page.tsx                # Landing page
-├── components/                 # Reusable UI & feature components
-│   ├── analytics/              # Analytics charts, metrics, heatmap
-│   ├── dashboard/              # Dashboard widgets & cards
-│   ├── documents/              # Document upload & view cards
-│   ├── landing/                # Landing page sections & preview
-│   ├── layout/                 # App shell, sidebar, mobile navigation
-│   ├── pomodoro/               # Pomodoro timer & widgets
-│   ├── shared/                 # Theme toggle, logos, modals
-│   ├── tasks/                  # Task forms, items, filters
-│   └── videos/                 # Video player, shortcuts, notes
-├── config/                     # Application configuration
-├── lib/                        # Core application logic
-│   ├── actions/                # Next.js Server Actions
-│   ├── analytics/              # Analytics calculation utilities
-│   ├── data/                   # Server-side data fetching
-│   ├── documents/              # File validation & helpers
-│   ├── pomodoro/               # Audio and persistent state utilities
-│   ├── supabase/               # Supabase client, server, middleware
-│   └── youtube/                # YouTube API client & URL parser
-├── public/                     # Static branding, icons, images
-├── scripts/                    # Security verification scripts
-├── supabase/                   # Database schemas & security SQL
-└── package.json
+To run the native Android companion locally:
+
+```bash
+cd mobile
+
+# Fetch Flutter dependencies
+flutter pub get
+
+# Run on connected device or emulator
+flutter run
+
+# Build release APK
+flutter build apk --split-per-abi
 ```
 
+For detailed production build and signing instructions, see [`docs/android-release.md`](docs/android-release.md).
+
 ---
 
-## Security
+## Project Commands
 
-StudySpace is designed with security and data privacy as important architectural considerations.
+| Command | Description |
+| :--- | :--- |
+| `npm run dev` | Starts Next.js development server with hot reloading on port 3000 |
+| `npm run build` | Compiles optimized Next.js production build |
+| `npm run start` | Runs the compiled production server |
+| `npm run lint` | Runs ESLint across all TypeScript and React files |
 
-- **Row Level Security (RLS)**: Database access is protected through Supabase RLS policies designed to keep user-specific study data isolated.
-- **Private Storage**: Study documents are stored in a private Supabase Storage bucket and served using short-lived signed URLs.
-- **File Validation**: Document uploads enforce file-type validation and a 50MB maximum size limit.
-- **No Camera/Microphone Access for Documents**: Document uploads use standard file pickers and do not request camera or microphone access.
-- **Secret Isolation**: Privileged values such as `YOUTUBE_API_KEY` are intended to remain server-side and are not exposed to client-side JavaScript.
-- **OAuth Redirect Protection**: Authentication callback redirects are validated to reduce open-redirect risk.
+---
 
-Security configuration should be reviewed alongside the project's Supabase policies and deployment environment before production use.
+## Further Documentation
+
+- **[System Architecture & Data Flow](docs/architecture.md)** — Deep dive into RLS, Server Actions, PostgREST DAL, and calculation engines.
+- **[Android Release Operations](docs/android-release.md)** — Guide to building, signing, and deploying Android APKs to Cloudflare R2.
+- **[UI/UX Design Blueprints](docs/design/)** — Component architecture, token definitions, and responsive breakpoints.
+- **[Security Policy](SECURITY.md)** — Credential management, RLS integrity, and vulnerability reporting.
+- **[Contributing Guidelines](CONTRIBUTING.md)** — Code conventions, branching strategy, and PR workflow.
+- **[Changelog](CHANGELOG.md)** — Verified version history and release notes.
 
 ---
 
 ## License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Author & Acknowledgments
+
+Crafted by **[Sachin](https://github.com/sachin06dev)** ([@sachin06dev](https://github.com/sachin06dev)).
+
+Special thanks to the open-source communities powering [Next.js](https://nextjs.org/), [Supabase](https://supabase.com/), [Tailwind CSS](https://tailwindcss.com/), [Flutter](https://flutter.dev/), and [Lucide Icons](https://lucide.dev/).
