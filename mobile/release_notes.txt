@@ -1,0 +1,6 @@
+• Interactive focus & Pomodoro study timer with real-time countdown and session controls
+• Instant one-tap class cancellation with quick Undo support
+• Always-current Home class schedule anchored strictly to real-time today date
+• Interactive week swipe gestures for effortless timetable navigation
+• Enhanced cross-platform real-time sync and account data export/privacy controls
+• General performance and stability optimizations

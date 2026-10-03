@@ -16,8 +16,8 @@ export default function TaskCompletionCard({
   const hasTasks = total > 0
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+    <div className="bg-white dark:bg-(--surface) rounded-3xl border border-slate-200/80 dark:border-(--border-subtle) p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-slate-100 dark:border-(--border-subtle)">
         <div>
           <h2 className="text-base font-bold text-slate-900 dark:text-white">Task Completion</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -47,7 +47,7 @@ export default function TaskCompletionCard({
             </div>
 
             <div
-              className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden p-0.5 border border-gray-200/60 dark:border-gray-700"
+              className="w-full h-3 bg-gray-100 dark:bg-(--surface-raised) rounded-full overflow-hidden p-0.5 border border-gray-200/60 dark:border-(--border-subtle)"
               role="progressbar"
               aria-valuenow={completionPercentage}
               aria-valuemin={0}
@@ -55,7 +55,7 @@ export default function TaskCompletionCard({
               aria-label={`Task completion: ${completionPercentage}%`}
             >
               <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-500 ease-out"
+                className="h-full bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full transition-all duration-[var(--duration-very-slow)] [transition-timing-function:var(--ease-smooth-out)]"
                 style={{ width: `${Math.min(100, Math.max(0, completionPercentage))}%` }}
               />
             </div>
@@ -63,7 +63,7 @@ export default function TaskCompletionCard({
 
           {/* Stats Breakdown Badges */}
           <div className="grid grid-cols-3 gap-2.5 pt-2">
-            <div className="bg-gray-50 dark:bg-gray-800/80 rounded-xl p-3 border border-gray-100 dark:border-gray-700 text-center">
+            <div className="bg-gray-50 dark:bg-(--surface-raised) rounded-xl p-3 border border-gray-100 dark:border-(--border-subtle) text-center">
               <span className="block text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Total
               </span>
@@ -87,8 +87,8 @@ export default function TaskCompletionCard({
         </div>
       ) : (
         /* Empty State */
-        <div className="py-8 px-4 text-center bg-gray-50/60 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-          <div className="mx-auto w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 mb-3">
+        <div className="py-8 px-4 text-center bg-gray-50/60 dark:bg-(--surface-raised)/40 rounded-xl border border-dashed border-gray-200 dark:border-(--border-subtle)">
+          <div className="mx-auto w-10 h-10 rounded-full bg-gray-100 dark:bg-(--surface-raised) flex items-center justify-center text-gray-400 dark:text-gray-500 mb-3">
             <svg
               className="w-5 h-5"
               fill="none"

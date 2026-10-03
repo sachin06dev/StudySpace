@@ -11,19 +11,19 @@ export default function ContinueLearning({ items }: ContinueLearningProps) {
   const hasItems = items.length > 0
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200/80 dark:border-gray-800 p-5 sm:p-6 shadow-xs transition-colors">
+    <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] p-5 sm:p-6 shadow-2xs transition-colors">
       {/* Section Header */}
       <div className="flex items-center justify-between gap-2 mb-4">
         <div>
-          <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Continue Learning</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <h2 className="text-base font-bold text-[var(--text-primary)]">Continue Learning</h2>
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">
             Pick up right where you left off in your study library
           </p>
         </div>
 
         <Link
           href="/videos"
-          className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 hover:underline"
+          className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] flex items-center gap-1 hover:underline"
         >
           <span>View all library</span>
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -41,22 +41,22 @@ export default function ContinueLearning({ items }: ContinueLearningProps) {
             return (
               <div
                 key={`${item.type}-${item.id}`}
-                className="group relative bg-white dark:bg-gray-800/80 rounded-xl border border-gray-200/90 dark:border-gray-700/80 hover:border-gray-300 dark:hover:border-gray-600 shadow-xs hover:shadow-md transition-all flex flex-col overflow-hidden justify-between"
+                className="group relative bg-[var(--surface-raised)] rounded-xl border border-[var(--border-subtle)] hover:border-[var(--border-strong)] shadow-2xs hover:shadow-md transition-all flex flex-col overflow-hidden justify-between"
               >
                 <div>
                   {/* Thumbnail / Header */}
-                  <Link href={item.href} className="relative aspect-video w-full bg-gray-900 overflow-hidden block">
+                  <Link href={item.href} className="relative aspect-video w-full bg-[var(--surface-elevated)] overflow-hidden block">
                     {item.thumbnailUrl ? (
                       <Image
                         src={item.thumbnailUrl}
                         alt={item.title}
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover group-hover:scale-105 transition-transform duration-[var(--duration-fast)] [transition-timing-function:var(--ease-smooth-out)]"
                         priority={index === 0}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-400 text-xs">
+                      <div className="w-full h-full flex items-center justify-center bg-[var(--surface-elevated)] text-[var(--text-muted)] text-xs">
                         {item.type === 'playlist' ? 'Playlist' : 'Video'}
                       </div>
                     )}
@@ -67,16 +67,16 @@ export default function ContinueLearning({ items }: ContinueLearningProps) {
                     {/* Type Badge */}
                     <div className="absolute top-2 left-2">
                       {item.type === 'playlist' ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-purple-900/80 backdrop-blur-xs text-purple-200 border border-purple-400/20">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-purple-500/20 backdrop-blur-xs text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40">
                           Playlist
                         </span>
                       ) : isInProgress ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-900/80 backdrop-blur-xs text-amber-200 border border-amber-400/20">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-500/20 backdrop-blur-xs text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                           <span>In Progress</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-gray-200">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-black/70 backdrop-blur-xs text-white">
                           Video
                         </span>
                       )}
@@ -91,9 +91,9 @@ export default function ContinueLearning({ items }: ContinueLearningProps) {
 
                     {/* Progress Bar */}
                     {item.progressPercent && item.progressPercent > 0 && (
-                      <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gray-900/70">
+                      <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/50">
                         <div
-                          className="h-full bg-red-600 transition-all duration-300"
+                          className="h-full bg-purple-600 dark:bg-purple-500 transition-all duration-[var(--duration-slow)] [transition-timing-function:var(--ease-smooth-out)]"
                           style={{ width: `${item.progressPercent}%` }}
                         />
                       </div>
@@ -104,14 +104,14 @@ export default function ContinueLearning({ items }: ContinueLearningProps) {
                   <div className="p-3.5">
                     <Link
                       href={item.href}
-                      className="block text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2 leading-snug"
+                      className="block text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors line-clamp-2 leading-snug"
                       title={item.title}
                     >
                       {item.title}
                     </Link>
 
                     {item.channelOrDomain && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                      <p className="text-xs text-[var(--text-muted)] mt-1 truncate">
                         {item.channelOrDomain}
                       </p>
                     )}
@@ -119,20 +119,20 @@ export default function ContinueLearning({ items }: ContinueLearningProps) {
                 </div>
 
                 {/* Footer Action */}
-                <div className="px-3.5 pb-3.5 pt-1 flex items-center justify-between border-t border-gray-100 dark:border-gray-700/60">
+                <div className="px-3.5 pb-3.5 pt-2.5 flex items-center justify-between border-t border-[var(--border-subtle)]">
                   {isInProgress && item.progressPercent ? (
-                    <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                    <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
                       {item.progressPercent}% watched
                     </span>
                   ) : (
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500 capitalize">
+                    <span className="text-[11px] text-[var(--text-muted)] capitalize">
                       {item.type}
                     </span>
                   )}
 
                   <Link
                     href={item.href}
-                    className="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex items-center gap-1"
+                    className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] flex items-center gap-1"
                   >
                     <span>{isInProgress ? 'Resume' : isVideo ? 'Watch' : 'View'}</span>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -146,26 +146,26 @@ export default function ContinueLearning({ items }: ContinueLearningProps) {
         </div>
       ) : (
         /* Empty State */
-        <div className="py-10 px-4 text-center bg-gray-50/60 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
-          <div className="mx-auto w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center mb-3">
+        <div className="py-10 px-4 text-center bg-[var(--surface-raised)]/50 rounded-xl border border-dashed border-[var(--border-subtle)]">
+          <div className="mx-auto w-12 h-12 rounded-full bg-[var(--accent-muted)] text-[var(--accent)] flex items-center justify-center mb-3">
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
             </svg>
           </div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Your study library is empty</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-4">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Your study library is empty</h3>
+          <p className="text-xs text-[var(--text-muted)] max-w-sm mx-auto mb-4">
             Add a YouTube tutorial, lecture playlist, document, or resource to begin building your study workspace.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Link
               href="/videos"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 px-3.5 py-1.5 rounded-xl shadow-xs transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 active:bg-purple-800 px-3.5 py-1.5 rounded-xl shadow-xs transition-colors"
             >
               <span>Add Video</span>
             </Link>
             <Link
               href="/playlists"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 px-3.5 py-1.5 rounded-xl shadow-xs transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)] bg-[var(--surface)] hover:bg-[var(--surface-elevated)] border border-[var(--border-subtle)] px-3.5 py-1.5 rounded-xl shadow-xs transition-colors"
             >
               <span>Browse Playlists</span>
             </Link>

@@ -69,7 +69,22 @@ export async function login(
 
 export async function logout(): Promise<void> {
   const supabase = await createClient()
-  await supabase.auth.signOut()
+  await supabase.auth.signOut({ scope: 'local' })
   revalidatePath('/', 'layout')
   redirect('/')
+}
+
+export async function logoutOtherDevices(): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.signOut({ scope: 'others' })
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    revalidatePath('/settings', 'page')
+    return { success: true }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to log out other devices'
+    return { success: false, error: message }
+  }
 }

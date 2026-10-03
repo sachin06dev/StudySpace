@@ -1,0 +1,173 @@
+name: Flutter Android CI & Web Regression
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web-regression:
+    name: Web Regression (Next.js & TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type-check
+        run: npx tsc --noEmit
+
+      - name: Next.js build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy-project.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy-anon-key' }}
+
+  flutter-android:
+    name: Flutter Android (Analyze, Test & Build APK)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.5'
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Configure Android local.properties
+        working-directory: mobile/android
+        run: |
+          FLUTTER_DIR="${FLUTTER_ROOT:-$(dirname $(dirname $(which flutter)))}"
+          echo "flutter.sdk=$FLUTTER_DIR" > local.properties
+          echo "sdk.dir=$ANDROID_HOME" >> local.properties
+
+      - name: Configure Android Signing Keystore (if provided)
+        working-directory: mobile/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 || secrets.STUDYSPACE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || secrets.STUDYSPACE_KEYSTORE_PASSWORD || 'android' }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || secrets.STUDYSPACE_KEY_ALIAS || 'androiddebugkey' }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || secrets.STUDYSPACE_KEY_PASSWORD || 'android' }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Decoding release keystore..."
+            echo "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
+            echo "storePassword=$KEYSTORE_PASSWORD" > key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> key.properties
+            echo "keyAlias=$KEY_ALIAS" >> key.properties
+            echo "storeFile=release.keystore" >> key.properties
+            echo "Android release signing configured."
+          fi
+
+      - name: Accept Android SDK Licenses & Ensure API 36 Platform & NDK
+        run: |
+          yes | flutter doctor --android-licenses || true
+          if [ -n "$ANDROID_HOME" ]; then
+            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
+            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "platforms;android-35" "build-tools;36.0.0" "ndk;28.2.13676358" "cmake;3.22.1" 2>/dev/null || true
+          fi
+
+      - name: Flutter doctor
+        working-directory: mobile
+        run: flutter doctor -v
+
+      - name: Verify Gradle Wrapper
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --version
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            mobile/.dart_tool
+          key: ${{ runner.os }}-pub-${{ hashFiles('mobile/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Flutter pub get
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Flutter analyze
+        working-directory: mobile
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos
+
+      - name: Flutter test
+        working-directory: mobile
+        run: flutter test --reporter=expanded
+
+      - name: Flutter build APK (Release)
+        working-directory: mobile
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+        run: flutter build apk --release --android-skip-build-dependency-validation
+
+      - name: Flutter build APK (Split per ABI)
+        working-directory: mobile
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+        run: flutter build apk --release --split-per-abi --android-skip-build-dependency-validation
+
+      - name: Flutter build AppBundle (Release)
+        working-directory: mobile
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+        run: flutter build appbundle --release --android-skip-build-dependency-validation
+
+      - name: Flutter build AppBundle (Analyze Size)
+        working-directory: mobile
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+        run: flutter build appbundle --analyze-size --target-platform android-arm64 --android-skip-build-dependency-validation
+
+      - name: Verify Release Outputs
+        working-directory: mobile
+        run: |
+          echo "=== APK Outputs ==="
+          ls -la build/app/outputs/flutter-apk/
+          echo "=== Bundle Outputs ==="
+          ls -la build/app/outputs/bundle/release/
+
+      - name: Upload Release APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: studyspace-release-apk
+          path: mobile/build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error
+
+      - name: Upload Release AAB (App Bundle)
+        uses: actions/upload-artifact@v4
+        with:
+          name: studyspace-release-aab
+          path: mobile/build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

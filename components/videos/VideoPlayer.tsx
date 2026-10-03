@@ -102,6 +102,7 @@ export interface VideoPlayerProps {
   onProgressChange?: (progressSeconds: number) => void
   notes?: VideoTimestampNote[]
   onNoteCreated?: (note: VideoTimestampNote) => void
+  initialStartSeconds?: number
 }
 
 const PLAYBACK_RATES = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
@@ -173,6 +174,7 @@ function VideoPlayerComponent(
     onProgressChange,
     notes = [],
     onNoteCreated,
+    initialStartSeconds,
   }: VideoPlayerProps,
   ref: React.Ref<VideoPlayerRef>
 ) {
@@ -218,6 +220,11 @@ function VideoPlayerComponent(
   const lastSavedTimeRef = useRef<number>(savedVideo.watch_progress_seconds || 0)
   const notesRef = useRef(notes)
   const onNoteCreatedRef = useRef(onNoteCreated)
+  const initialStartSecondsRef = useRef(initialStartSeconds)
+
+  useEffect(() => {
+    initialStartSecondsRef.current = initialStartSeconds
+  }, [initialStartSeconds])
 
   useEffect(() => {
     savedVideoRef.current = savedVideo
@@ -721,7 +728,9 @@ function VideoPlayerComponent(
       (savedVideoRef.current.watch_progress_seconds || 0) >= durationSecs * 0.95
 
     const startSeconds =
-      isCompleted || isNearEnd
+      typeof initialStartSecondsRef.current === 'number'
+        ? initialStartSecondsRef.current
+        : isCompleted || isNearEnd
         ? 0
         : Math.max(0, Math.floor(savedVideoRef.current.watch_progress_seconds || 0))
 

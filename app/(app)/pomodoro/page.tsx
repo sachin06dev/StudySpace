@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getCachedUser, getCachedUserTimezone } from '@/lib/data/cachedUser'
 import { getRecentSessions } from '@/lib/data/pomodoro'
-import { getUserTimezone } from '@/lib/data/analytics'
 import PageHeader from '@/components/shared/PageHeader'
 import PomodoroTimer from '@/components/pomodoro/PomodoroTimer'
 import SessionHistory from '@/components/pomodoro/SessionHistory'
@@ -12,10 +11,7 @@ export const metadata = {
 }
 
 export default async function PomodoroPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCachedUser()
 
   if (!user) {
     redirect('/login')
@@ -23,7 +19,7 @@ export default async function PomodoroPage() {
 
   const [sessions, timezone] = await Promise.all([
     getRecentSessions(user.id, 50),
-    getUserTimezone(user.id),
+    getCachedUserTimezone(user.id),
   ])
 
   return (

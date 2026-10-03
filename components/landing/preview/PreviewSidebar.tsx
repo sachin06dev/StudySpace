@@ -106,11 +106,11 @@ export default function PreviewSidebar({ activeSection, onNavigate }: PreviewSid
     >
       <div className="space-y-3 w-full flex flex-col items-center">
         {/* Brand Monogram */}
-        <div className="w-8 h-8 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-violet-600 dark:bg-violet-500 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
           S
         </div>
 
-        <div className="w-full h-px bg-gray-200/80 dark:bg-gray-800/80" />
+        <div className="w-full h-px bg-gray-200/80 dark:border-gray-800/80" />
 
         {/* Navigation list */}
         <nav className="space-y-1 w-full flex flex-col items-center">
@@ -125,13 +125,13 @@ export default function PreviewSidebar({ activeSection, onNavigate }: PreviewSid
                 aria-label={`Open ${item.name} preview`}
                 className={`w-full h-9 rounded-xl flex items-center justify-center transition-all duration-150 cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-semibold shadow-2xs border border-indigo-100/80 dark:border-indigo-500/30'
+                    ? 'bg-violet-50 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 font-semibold shadow-2xs border border-violet-100/80 dark:border-violet-500/30'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100/80 dark:hover:bg-gray-800/60 border border-transparent'
                 }`}
               >
                 <span
                   className={`shrink-0 flex items-center justify-center ${
-                    isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'
+                    isActive ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400 dark:text-gray-500'
                   }`}
                 >
                   {item.icon}
@@ -144,7 +144,7 @@ export default function PreviewSidebar({ activeSection, onNavigate }: PreviewSid
 
       {/* User profile avatar */}
       <div
-        className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-[10px] font-bold shrink-0 shadow-2xs border border-indigo-200/60 dark:border-indigo-800/60"
+        className="w-7 h-7 rounded-full bg-violet-100 dark:bg-violet-900/60 text-violet-600 dark:text-violet-300 flex items-center justify-center text-[10px] font-bold shrink-0 shadow-2xs border border-violet-200/60 dark:border-violet-800/60"
         title="Memo (Student Demo Account)"
       >
         M

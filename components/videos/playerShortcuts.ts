@@ -30,6 +30,27 @@ export const PLAYER_SHORTCUTS: ShortcutDefinition[] = [
     category: 'playback',
   },
   {
+    id: 'toggle_focus_mode',
+    keys: ['Ctrl+Shift+F', 'Cmd+Shift+F'],
+    displayKeys: ['Ctrl', 'Shift', 'F'],
+    description: 'Toggle Focus Mode (Collapse/Expand Sidebar)',
+    category: 'playback',
+  },
+  {
+    id: 'playlist_next',
+    keys: ['Shift+N'],
+    displayKeys: ['Shift', 'N'],
+    description: 'Next video in course playlist',
+    category: 'navigation',
+  },
+  {
+    id: 'playlist_prev',
+    keys: ['Shift+P'],
+    displayKeys: ['Shift', 'P'],
+    description: 'Previous video in course playlist',
+    category: 'navigation',
+  },
+  {
     id: 'exit_or_close',
     keys: ['Escape'],
     displayKeys: ['Esc'],

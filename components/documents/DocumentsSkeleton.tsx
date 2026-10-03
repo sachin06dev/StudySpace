@@ -2,25 +2,32 @@ import React from 'react'
 
 export default function DocumentsSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse" aria-label="Loading documents...">
-      {[1, 2, 3, 4, 5, 6].map((i) => (
-        <div
-          key={i}
-          className="h-36 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-xs flex flex-col justify-between"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gray-200 dark:bg-gray-800 shrink-0" />
-            <div className="space-y-1.5 w-full">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
-              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
+    <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] overflow-hidden animate-pulse" aria-label="Loading documents...">
+      {/* Table Header skeleton */}
+      <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+        <div className="col-span-5 h-3 bg-[var(--surface)] rounded w-1/3" />
+        <div className="col-span-2 h-3 bg-[var(--surface)] rounded w-1/2" />
+        <div className="col-span-2 h-3 bg-[var(--surface)] rounded w-1/3" />
+        <div className="col-span-2 h-3 bg-[var(--surface)] rounded w-1/3" />
+        <div className="col-span-1 h-3 bg-[var(--surface)] rounded w-1/2 ml-auto" />
+      </div>
+
+      {/* Row skeletons */}
+      <div className="divide-y divide-[var(--border-subtle)]">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex items-center gap-4 px-5 py-4">
+            <div className="w-8 h-8 rounded-lg bg-[var(--surface-raised)] shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <div className="h-3.5 bg-[var(--surface-raised)] rounded w-2/5" />
+              <div className="h-2.5 bg-[var(--surface-raised)] rounded w-1/4" />
             </div>
+            <div className="hidden md:block w-20 h-5 rounded-md bg-[var(--surface-raised)]" />
+            <div className="hidden md:block w-16 h-3 bg-[var(--surface-raised)] rounded" />
+            <div className="hidden md:block w-20 h-3 bg-[var(--surface-raised)] rounded" />
+            <div className="w-8 h-8 rounded-lg bg-[var(--surface-raised)] shrink-0" />
           </div>
-          <div className="flex justify-between items-center pt-2">
-            <div className="h-4 bg-gray-100 dark:bg-gray-850 rounded w-1/4" />
-            <div className="h-6 w-16 bg-gray-100 dark:bg-gray-800 rounded-lg" />
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }

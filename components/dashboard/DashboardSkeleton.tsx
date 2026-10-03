@@ -3,33 +3,33 @@ import React from 'react'
 export default function DashboardCardsSkeleton() {
   return (
     <div className="space-y-6 animate-pulse" aria-label="Loading dashboard cards...">
-      {/* 1. Today's Metrics (3 Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[1, 2, 3].map((i) => (
+      {/* 1. Hero Split Skeleton: Next Class (60%) + Mountain Banner (40%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="lg:col-span-7 h-56 rounded-3xl bg-[var(--surface)] border border-[var(--border-subtle)] p-6 shadow-xs" />
+        <div className="lg:col-span-5 h-56 rounded-3xl bg-[var(--surface)] border border-[var(--border-subtle)] p-6 shadow-xs hidden lg:block" />
+      </div>
+
+      {/* 2. Metric Strip: 4 Inline Tiles */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="h-28 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 shadow-xs flex flex-col justify-between"
-          >
-            <div className="flex justify-between items-center">
-              <div className="h-4 w-28 bg-gray-100 dark:bg-gray-800 rounded" />
-              <div className="h-7 w-7 rounded-xl bg-gray-100 dark:bg-gray-800" />
-            </div>
-            <div className="h-7 w-20 bg-gray-200 dark:bg-gray-700 rounded-md" />
-          </div>
+            className="h-24 rounded-2xl bg-[var(--surface)] border border-[var(--border-subtle)] p-4 shadow-xs"
+          />
         ))}
       </div>
 
-      {/* 2. Consistency Card Skeleton */}
-      <div className="h-44 rounded-3xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 shadow-xs" />
-
-      {/* 3. Main Action Grid: Tasks + Pomodoro Focus */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-72 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 shadow-xs" />
-        <div className="lg:col-span-1 h-72 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 shadow-xs" />
+      {/* 3. Main Split: Today's Schedule (65%) + Study Activity (35%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 h-80 rounded-3xl bg-[var(--surface)] border border-[var(--border-subtle)] p-6 shadow-xs" />
+        <div className="lg:col-span-4 h-80 rounded-3xl bg-[var(--surface)] border border-[var(--border-subtle)] p-6 shadow-xs" />
       </div>
 
-      {/* 3. Continue Learning Skeleton */}
-      <div className="h-56 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 shadow-xs" />
+      {/* 4. Consistency Card Skeleton */}
+      <div className="h-44 rounded-3xl bg-[var(--surface)] border border-[var(--border-subtle)] p-6 shadow-xs" />
+
+      {/* 5. Continue Learning Skeleton */}
+      <div className="h-56 rounded-2xl bg-[var(--surface)] border border-[var(--border-subtle)] p-6 shadow-xs" />
     </div>
   )
 }

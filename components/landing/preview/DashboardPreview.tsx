@@ -22,6 +22,21 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
     { id: 'dt-4', title: 'Read OS Chapter 2: Threads', completed: false },
   ])
 
+  // Attendance interactive state for current class in demo
+  const [attendanceStatus, setAttendanceStatus] = useState<'present' | 'absent' | null>('present')
+  const [attendancePct, setAttendancePct] = useState<number>(82)
+
+  const handleMarkAttendance = (status: 'present' | 'absent' | null) => {
+    setAttendanceStatus(status)
+    if (status === 'present') {
+      setAttendancePct(85)
+    } else if (status === 'absent') {
+      setAttendancePct(78)
+    } else {
+      setAttendancePct(82)
+    }
+  }
+
   const toggleTask = (id: string) => {
     setTasks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
@@ -32,7 +47,7 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
   const completionPercentage = Math.round((completedCount / tasks.length) * 100)
 
   return (
-    <div className="p-3 sm:p-4 md:p-5 space-y-3.5 text-xs select-none">
+    <div className="p-3 sm:p-4 md:p-5 space-y-3 text-xs select-none">
       {/* Header Greeting inside Mockup */}
       <div className="flex items-center justify-between gap-2 min-w-0">
         <div className="min-w-0">
@@ -40,12 +55,12 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
             <h3 className="text-xs sm:text-sm md:text-base font-bold text-gray-900 dark:text-gray-100 truncate">
               Welcome, Memo
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 shrink-0">
+            <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800/60 shrink-0">
               Pro Student
             </span>
           </div>
           <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-            Let&apos;s make today productive.
+            Your academic workspace is up to date.
           </p>
         </div>
 
@@ -62,21 +77,101 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
         </button>
       </div>
 
+      {/* Next Class & Live Attendance Control Card */}
+      <div className="p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-violet-500/10 via-purple-500/5 to-transparent border border-violet-200/70 dark:border-violet-800/60 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="text-[10px] sm:text-[11px] font-bold text-gray-900 dark:text-gray-100 truncate">
+                Next: Data Structures (CS201)
+              </span>
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-violet-100 dark:bg-violet-900/60 text-violet-700 dark:text-violet-300 font-medium">
+                11:30 AM
+              </span>
+            </div>
+            <p className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+              Room 402 · Prof. Vance · Current Attendance: <strong className="text-violet-600 dark:text-violet-400">{attendancePct}%</strong>
+            </p>
+          </div>
+
+          {/* Status Badge */}
+          <div className="shrink-0">
+            {attendanceStatus === 'present' && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                <span>✓</span> Marked Present
+              </span>
+            )}
+            {attendanceStatus === 'absent' && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                <span>✕</span> Marked Absent
+              </span>
+            )}
+            {attendanceStatus === null && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                <span>○</span> Not Marked
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* 1-Tap Attendance Buttons matching mobile interaction */}
+        <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-violet-100/80 dark:border-violet-900/40">
+          <button
+            type="button"
+            onClick={() => handleMarkAttendance('present')}
+            className={`py-1.5 px-2 rounded-xl text-[10px] font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              attendanceStatus === 'present'
+                ? 'bg-emerald-600 text-white shadow-xs scale-[1.02]'
+                : 'bg-white dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+            }`}
+          >
+            <span>✓</span>
+            <span>Present</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleMarkAttendance('absent')}
+            className={`py-1.5 px-2 rounded-xl text-[10px] font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              attendanceStatus === 'absent'
+                ? 'bg-rose-600 text-white shadow-xs scale-[1.02]'
+                : 'bg-white dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-rose-50 dark:hover:bg-rose-950/40'
+            }`}
+          >
+            <span>✕</span>
+            <span>Absent</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleMarkAttendance(null)}
+            className={`py-1.5 px-2 rounded-xl text-[10px] font-medium transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              attendanceStatus === null
+                ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                : 'bg-white dark:bg-gray-800/80 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/60'
+            }`}
+          >
+            <span>Cancel</span>
+          </button>
+        </div>
+      </div>
+
       {/* Quick Interactive Metrics Row */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {/* Study Time Card */}
         <button
           type="button"
           onClick={() => onNavigate('analytics')}
-          className="p-2 sm:p-3 rounded-2xl bg-white dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/60 shadow-2xs hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-xs transition-all text-left cursor-pointer group min-w-0 flex flex-col justify-between"
+          className="p-2 sm:p-3 rounded-2xl bg-white dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/60 shadow-2xs hover:border-violet-300 dark:hover:border-violet-600 hover:shadow-xs transition-all text-left cursor-pointer group min-w-0 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1 w-full min-w-0">
             <span className="text-[9px] sm:text-[11px] font-medium truncate block">Study Time</span>
-            <span className="text-[9px] text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hidden sm:inline">
+            <span className="text-[9px] text-violet-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hidden sm:inline">
               →
             </span>
           </div>
-          <div className="text-xs sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 truncate">
+          <div className="text-xs sm:text-base font-extrabold text-violet-600 dark:text-violet-400 truncate">
             2h 45m
           </div>
           <span className="text-[8px] sm:text-[10px] text-gray-400 dark:text-gray-500 truncate block mt-0.5">
@@ -132,7 +227,7 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
           <div>
             <div className="flex items-center justify-between gap-2 text-[10px] sm:text-[11px] font-semibold text-gray-800 dark:text-gray-200 mb-2 min-w-0">
               <span className="truncate">Data Structures &amp; Algorithms</span>
-              <span className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-mono font-bold shrink-0">
+              <span className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 font-mono font-bold shrink-0">
                 Lecture 14
               </span>
             </div>
@@ -140,7 +235,7 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
             {/* Simulated Interactive Video Screen with clean 16:9 Aspect Ratio */}
             <div
               onClick={() => onNavigate('videos')}
-              className="relative aspect-video w-full rounded-xl bg-gradient-to-tr from-slate-950 via-indigo-950 to-slate-900 flex flex-col justify-between p-2 sm:p-2.5 overflow-hidden border border-indigo-900/50 cursor-pointer group shadow-inner"
+              className="relative aspect-video w-full rounded-xl bg-gradient-to-tr from-slate-950 via-violet-950 to-slate-900 flex flex-col justify-between p-2 sm:p-2.5 overflow-hidden border border-violet-900/50 cursor-pointer group shadow-inner"
             >
               <div className="flex items-center justify-between z-10">
                 <span className="px-1.5 py-0.5 rounded bg-black/70 text-[8px] sm:text-[9px] font-mono text-gray-200 backdrop-blur-xs">
@@ -152,7 +247,7 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
               </div>
 
               {/* Hover Center Play Button */}
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 group-hover:bg-indigo-600 backdrop-blur-sm border border-white/40 group-hover:border-indigo-400 text-white flex items-center justify-center mx-auto transition-all transform group-hover:scale-110 shadow-lg z-10">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 group-hover:bg-violet-600 backdrop-blur-sm border border-white/40 group-hover:border-violet-400 text-white flex items-center justify-center mx-auto transition-all transform group-hover:scale-110 shadow-lg z-10">
                 <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white translate-x-0.5" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
@@ -161,7 +256,7 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
               {/* Progress bar */}
               <div className="space-y-1 z-10">
                 <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
-                  <div className="w-3/5 h-full bg-indigo-500 rounded-full" />
+                  <div className="w-3/5 h-full bg-violet-500 rounded-full" />
                 </div>
                 <div className="flex justify-between text-[8px] sm:text-[9px] text-gray-300 font-mono">
                   <span>18:42</span>
@@ -178,9 +273,9 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
                   onSelectTimestamp?.(252)
                   onNavigate('videos')
                 }}
-                className="w-full grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-1.5 sm:p-2 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100/60 dark:border-indigo-900/40 text-[9px] sm:text-[10px] hover:bg-indigo-100/70 dark:hover:bg-indigo-900/60 transition-colors text-left cursor-pointer min-w-0"
+                className="w-full grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-1.5 sm:p-2 rounded-xl bg-violet-50/60 dark:bg-violet-950/40 border border-violet-100/60 dark:border-violet-900/40 text-[9px] sm:text-[10px] hover:bg-violet-100/70 dark:hover:bg-violet-900/60 transition-colors text-left cursor-pointer min-w-0"
               >
-                <span className="px-1.5 py-0.5 rounded bg-indigo-600 text-white font-mono font-bold text-[8px] sm:text-[9px] shrink-0">
+                <span className="px-1.5 py-0.5 rounded bg-violet-600 text-white font-mono font-bold text-[8px] sm:text-[9px] shrink-0">
                   04:12
                 </span>
                 <span className="text-gray-700 dark:text-gray-300 truncate">
@@ -211,7 +306,7 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
             <button
               type="button"
               onClick={() => onNavigate('notes')}
-              className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer"
+              className="text-violet-600 dark:text-violet-400 font-semibold hover:underline cursor-pointer"
             >
               All Notes →
             </button>
@@ -243,14 +338,14 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
                   className={`w-full grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-1.5 sm:p-2 rounded-xl text-[9px] sm:text-[10px] border transition-all text-left cursor-pointer min-w-0 ${
                     task.completed
                       ? 'bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400'
-                      : 'bg-indigo-50/40 dark:bg-indigo-950/30 border-indigo-100/60 dark:border-indigo-900/30 text-gray-800 dark:text-gray-200 font-medium'
+                      : 'bg-violet-50/40 dark:bg-violet-950/30 border-violet-100/60 dark:border-violet-900/30 text-gray-800 dark:text-gray-200 font-medium'
                   }`}
                 >
                   <span
                     className={`w-4 h-4 rounded-md flex items-center justify-center text-[8px] sm:text-[9px] font-bold shrink-0 transition-colors ${
                       task.completed
                         ? 'bg-emerald-500 text-white'
-                        : 'border border-indigo-400 dark:border-indigo-500 bg-white dark:bg-gray-800'
+                        : 'border border-violet-400 dark:border-violet-500 bg-white dark:bg-gray-800'
                     }`}
                   >
                     {task.completed ? '✓' : ''}
@@ -266,12 +361,12 @@ export default function DashboardPreview({ onNavigate, onSelectTimestamp }: Dash
           <div className="mt-3 pt-2 border-t border-gray-100 dark:border-gray-800/80 space-y-1.5">
             <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-gray-500">
               <span>Weekly Goal</span>
-              <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+              <span className="font-semibold text-violet-600 dark:text-violet-400">
                 18.5 / 20 hrs
               </span>
             </div>
             <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700/60 rounded-full overflow-hidden">
-              <div className="w-[92%] h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" />
+              <div className="w-[92%] h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full" />
             </div>
           </div>
         </div>

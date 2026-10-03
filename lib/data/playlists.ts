@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { YoutubePlaylistMetadata, YoutubeVideoMetadata } from '@/lib/youtube/client'
 import {
   findOrCreateYoutubeVideo,
@@ -64,9 +65,10 @@ export interface PlaylistWithItems {
  * Finds an existing playlist in the global `youtube_playlists` catalog or creates one.
  */
 export async function findOrCreateYoutubePlaylist(
-  metadata: YoutubePlaylistMetadata
+  metadata: YoutubePlaylistMetadata,
+  client?: SupabaseClient
 ): Promise<YoutubePlaylist> {
-  const supabase = await createClient()
+  const supabase = client || (await createClient())
 
   // 1. Check if it already exists
   const { data: existing, error: findError } = await supabase
@@ -127,9 +129,10 @@ export async function findOrCreateYoutubePlaylist(
  */
 export async function savePlaylistForUser(
   userId: string,
-  playlistId: string
+  playlistId: string,
+  client?: SupabaseClient
 ): Promise<{ savedPlaylist: SavedPlaylist; isNew: boolean }> {
-  const supabase = await createClient()
+  const supabase = client || (await createClient())
 
   const { data, error } = await supabase
     .from('saved_playlists')
@@ -171,9 +174,10 @@ export async function savePlaylistForUser(
  */
 export async function syncPlaylistItems(
   playlistId: string,
-  videos: YoutubeVideoMetadata[]
+  videos: YoutubeVideoMetadata[],
+  client?: SupabaseClient
 ): Promise<void> {
-  const supabase = await createClient()
+  const supabase = client || (await createClient())
 
   if (!videos || videos.length === 0) {
     return
@@ -235,7 +239,7 @@ export async function syncPlaylistItems(
         // Fallback to individual insert
         for (const m of chunkMeta) {
           try {
-            const v = await findOrCreateYoutubeVideo(m)
+            const v = await findOrCreateYoutubeVideo(m, supabase)
             videoCatalogMap.set(m.youtube_video_id, v)
           } catch (e) {
             console.error(`Failed to catalog video ${m.youtube_video_id}:`, e)
@@ -280,6 +284,31 @@ export async function syncPlaylistItems(
       console.error('Error upserting playlist items chunk:', upsertErr)
       throw new Error(`Failed to sync playlist items: ${upsertErr.message || 'Database error'}`)
     }
+  }
+}
+
+/**
+ * Finds the saved playlist ID that contains a specific video for the user.
+ * Enables auto-enabling playlist navigation even if fromPlaylist query param was omitted.
+ */
+export async function findUserPlaylistForVideo(
+  userId: string,
+  videoId: string
+): Promise<string | null> {
+  const supabase = await createClient()
+  try {
+    const { data } = await supabase
+      .from('playlist_items')
+      .select('playlist_id, saved_playlists!inner(user_id)')
+      .eq('video_id', videoId)
+      .eq('saved_playlists.user_id', userId)
+      .limit(1)
+      .maybeSingle()
+
+    return data?.playlist_id || null
+  } catch (err) {
+    console.warn('[Playlists] Error finding user playlist for video:', err)
+    return null
   }
 }
 

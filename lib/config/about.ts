@@ -1,7 +1,6 @@
 export interface AboutSocialLinks {
   github?: string
   linkedin?: string
-  instagram?: string
   portfolio?: string
   twitter?: string
   email?: string
@@ -37,7 +36,6 @@ export const aboutData: AboutData = {
   socialLinks: {
     github: 'https://github.com/sachin06dev',
     linkedin: 'https://www.linkedin.com/in/sachin06dev',
-    instagram: '',
     portfolio: '',
     email: 'sachin06.dev@gmail.com',
   },

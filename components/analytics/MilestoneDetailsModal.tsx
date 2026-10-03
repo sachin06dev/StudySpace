@@ -74,7 +74,7 @@ export default function MilestoneDetailsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-[var(--duration-fast)]"
       onClick={onClose}
     >
       {/* Modal Dialog Card */}
@@ -86,10 +86,10 @@ export default function MilestoneDetailsModal({
         aria-describedby="milestone-modal-description"
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl space-y-5 text-left outline-none animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto"
+        className="relative bg-white dark:bg-(--surface) border border-slate-200 dark:border-(--border-subtle) rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl space-y-5 text-left outline-none animate-in zoom-in-[0.96] duration-[var(--duration-fast)] [animation-timing-function:var(--ease-smooth-out)] max-h-[90vh] overflow-y-auto"
       >
         {/* Top Header Row */}
-        <div className="flex items-start justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-start justify-between gap-3 pb-4 border-b border-slate-100 dark:border-(--border-subtle)">
           <div className="flex items-center gap-3.5">
             <MilestoneBadgeIcon item={milestone} size="lg" />
 
@@ -104,7 +104,7 @@ export default function MilestoneDetailsModal({
               </div>
 
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-(--surface-raised) text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-(--border-subtle)">
                   {categoryFullLabel}
                 </span>
 
@@ -113,7 +113,7 @@ export default function MilestoneDetailsModal({
                     Unlocked ✓
                   </span>
                 ) : (
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-700/60">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-(--surface-raised) px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-(--border-subtle)">
                     In Progress
                   </span>
                 )}
@@ -126,7 +126,7 @@ export default function MilestoneDetailsModal({
             type="button"
             onClick={onClose}
             aria-label="Close milestone details"
-            className="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold transition-colors cursor-pointer shrink-0"
+            className="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-(--surface-raised) flex items-center justify-center text-sm font-bold transition-colors cursor-pointer shrink-0"
           >
             ✕
           </button>
@@ -146,7 +146,7 @@ export default function MilestoneDetailsModal({
         </div>
 
         {/* Unlock Requirement */}
-        <div className="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 space-y-1">
+        <div className="bg-slate-50 dark:bg-(--surface-raised)/40 p-3.5 rounded-2xl border border-slate-200/70 dark:border-(--border-subtle) space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
             <span>🎯</span>
             <span>Unlock Requirement</span>
@@ -169,13 +169,13 @@ export default function MilestoneDetailsModal({
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-700/60">
+          <div className="w-full bg-slate-100 dark:bg-(--surface-raised) h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-(--border-subtle)">
             <div
               style={{ width: `${milestone.progressPercent}%` }}
-              className={`h-full rounded-full transition-all duration-500 ${
+              className={`h-full rounded-full transition-all duration-[var(--duration-very-slow)] [transition-timing-function:var(--ease-smooth-out)] ${
                 isUnlocked
                   ? 'bg-gradient-to-r from-emerald-400 to-teal-500 shadow-xs shadow-emerald-500/30'
-                  : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                  : 'bg-gradient-to-r from-purple-600 to-indigo-600'
               }`}
             />
           </div>
@@ -198,7 +198,7 @@ export default function MilestoneDetailsModal({
 
         {/* Quick Facts Breakdown Grid */}
         <div className="grid grid-cols-3 gap-2.5 pt-1 text-center">
-          <div className="bg-slate-50/80 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+          <div className="bg-slate-50/80 dark:bg-(--surface-raised)/50 p-2.5 rounded-xl border border-slate-100 dark:border-(--border-subtle)">
             <span className="block text-[10px] text-slate-400 font-medium uppercase tracking-wider">
               Target
             </span>
@@ -207,7 +207,7 @@ export default function MilestoneDetailsModal({
             </span>
           </div>
 
-          <div className="bg-slate-50/80 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+          <div className="bg-slate-50/80 dark:bg-(--surface-raised)/50 p-2.5 rounded-xl border border-slate-100 dark:border-(--border-subtle)">
             <span className="block text-[10px] text-slate-400 font-medium uppercase tracking-wider">
               Your Record
             </span>
@@ -216,7 +216,7 @@ export default function MilestoneDetailsModal({
             </span>
           </div>
 
-          <div className="bg-slate-50/80 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+          <div className="bg-slate-50/80 dark:bg-(--surface-raised)/50 p-2.5 rounded-xl border border-slate-100 dark:border-(--border-subtle)">
             <span className="block text-[10px] text-slate-400 font-medium uppercase tracking-wider">
               Category
             </span>
@@ -231,7 +231,7 @@ export default function MilestoneDetailsModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors cursor-pointer shadow-xs"
+            className="px-4 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors cursor-pointer shadow-xs"
           >
             Got it
           </button>

@@ -34,7 +34,7 @@ const securityHeaders = [
       "img-src 'self' data: blob: https://i.ytimg.com https://img.youtube.com https://*.googleusercontent.com https://images.unsplash.com https://*.supabase.co https://www.google.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.googleapis.com https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.googleapis.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://*.r2.cloudflarestorage.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { Calendar, Flame, Clock, Timer, FileText, CheckCircle2 } from 'lucide-react'
 import {
   formatDateTooltip,
   getZonedDateParts,
@@ -183,16 +184,16 @@ export default function HeatmapGrid({
     if (isNull) return 'bg-transparent border-transparent pointer-events-none'
     switch (level) {
       case 1:
-        return 'bg-indigo-200 dark:bg-indigo-950/80 border-indigo-300 dark:border-indigo-800/60 hover:ring-2 hover:ring-indigo-400'
+        return 'bg-purple-100 dark:bg-purple-950/80 border-purple-200 dark:border-purple-900/60 hover:ring-2 hover:ring-purple-400'
       case 2:
-        return 'bg-indigo-400 dark:bg-indigo-700 border-indigo-500 dark:border-indigo-600 hover:ring-2 hover:ring-indigo-300'
+        return 'bg-purple-300 dark:bg-purple-800/90 border-purple-400 dark:border-purple-700 hover:ring-2 hover:ring-purple-300'
       case 3:
-        return 'bg-indigo-600 dark:bg-indigo-500 border-indigo-700 dark:border-indigo-400 hover:ring-2 hover:ring-indigo-200'
+        return 'bg-purple-500 dark:bg-purple-600 border-purple-600 dark:border-purple-500 hover:ring-2 hover:ring-purple-200'
       case 4:
-        return 'bg-indigo-800 dark:bg-indigo-400 border-indigo-900 dark:border-indigo-300 shadow-xs hover:ring-2 hover:ring-indigo-100'
+        return 'bg-purple-700 dark:bg-purple-400 border-purple-800 dark:border-purple-300 shadow-xs hover:ring-2 hover:ring-purple-100'
       case 0:
       default:
-        return 'bg-slate-100 dark:bg-slate-800/80 border-slate-200/60 dark:border-slate-700/50 hover:ring-2 hover:ring-slate-400'
+        return 'bg-gray-100 dark:bg-[var(--surface-raised)] border-gray-200/60 dark:border-[var(--border-subtle)] hover:ring-2 hover:ring-purple-400/50'
     }
   }
 
@@ -206,36 +207,39 @@ export default function HeatmapGrid({
   return (
     <div
       id={isDashboardMode ? 'dashboard-heatmap' : 'heatmap-grid'}
-      className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xs transition-all ${
-        isDashboardMode ? 'p-5 sm:p-6 space-y-4' : 'p-5 sm:p-6 space-y-4'
-      }`}
+      className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-xs transition-all p-5 sm:p-6 space-y-4"
     >
       {/* 1. Header Area */}
       {isDashboardMode ? (
         /* Dashboard Mode Header: "Your Study Journey" + Compact Streak Badges */
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border-subtle)]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0">
-              🗓️
+            <div className="w-8 h-8 rounded-xl bg-[var(--accent-subtle)] border border-[var(--border-subtle)] text-[var(--accent)] flex items-center justify-center font-bold text-sm shrink-0">
+              <Calendar className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                <h2 className="text-base font-bold text-[var(--foreground)]">
                   Your Study Journey
                 </h2>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-[var(--surface-muted)] text-[var(--foreground-muted)] border border-[var(--border-subtle)]">
                   {currentYearNum}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                🔥 <span className="font-semibold text-slate-700 dark:text-slate-200">{activeStreaks.currentStreak} day streak</span> • {activeStreaks.activeDays} active days • Longest: {activeStreaks.longestStreak} days
+              <p className="text-xs text-[var(--foreground-muted)] mt-0.5 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5 text-amber-500" />
+                <span className="font-semibold text-[var(--foreground)]">{activeStreaks.currentStreak} day streak</span>
+                <span>•</span>
+                <span>{activeStreaks.activeDays} active days</span>
+                <span>•</span>
+                <span>Longest: {activeStreaks.longestStreak} days</span>
               </p>
             </div>
           </div>
 
           <Link
             href="/analytics"
-            className="self-start sm:self-auto text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors flex items-center gap-1 shrink-0"
+            className="self-start sm:self-auto text-xs font-semibold text-[var(--accent)] hover:underline transition-colors flex items-center gap-1 shrink-0"
           >
             <span>View Analytics</span>
             <span>→</span>
@@ -243,17 +247,17 @@ export default function HeatmapGrid({
         </div>
       ) : (
         /* Full Analytics Header: Title / Submissions Summary + Current Year + Compact Stats */
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-[var(--border-subtle)]">
           {/* Left: Summary Title & Subtitle */}
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              <h2 className="text-base font-bold text-[var(--foreground)]">
                 {totalActivitiesCount}{' '}
                 {totalActivitiesCount === 1 ? 'activity' : 'activities'} in {currentYearNum}
               </h2>
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-[var(--foreground-muted)]">
               Contribution activity tracked in your timezone ({timezone})
             </p>
           </div>
@@ -261,22 +265,23 @@ export default function HeatmapGrid({
           {/* Right: Compact Streak & Active Day Badges */}
           {renderStats && (
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
-              <div className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1.5">
-                <span className="text-slate-500 dark:text-slate-400">Total active days</span>
-                <span className="font-bold text-slate-900 dark:text-white">{activeStreaks.activeDays}</span>
+              <div className="px-3 py-1.5 rounded-xl bg-[var(--surface-muted)] border border-[var(--border-subtle)] flex items-center gap-1.5">
+                <span className="text-[var(--foreground-muted)]">Total active days</span>
+                <span className="font-bold text-[var(--foreground)]">{activeStreaks.activeDays}</span>
               </div>
 
-              <div className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1.5">
-                <span className="text-slate-500 dark:text-slate-400">Max streak</span>
-                <span className="font-bold text-slate-900 dark:text-white">
+              <div className="px-3 py-1.5 rounded-xl bg-[var(--surface-muted)] border border-[var(--border-subtle)] flex items-center gap-1.5">
+                <span className="text-[var(--foreground-muted)]">Max streak</span>
+                <span className="font-bold text-[var(--foreground)]">
                   {activeStreaks.longestStreak} {activeStreaks.longestStreak === 1 ? 'day' : 'days'}
                 </span>
               </div>
 
               {activeStreaks.currentStreak > 0 && (
-                <div className="px-3 py-1.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-1.5">
-                  <span className="text-indigo-600 dark:text-indigo-400 font-medium">🔥 Current</span>
-                  <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                <div className="px-3 py-1.5 rounded-xl bg-[var(--accent-subtle)] border border-[var(--border-subtle)] flex items-center gap-1.5">
+                  <Flame className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[var(--accent)] font-medium">Current</span>
+                  <span className="font-bold text-[var(--foreground)]">
                     {activeStreaks.currentStreak} {activeStreaks.currentStreak === 1 ? 'day' : 'days'}
                   </span>
                 </div>
@@ -390,43 +395,49 @@ export default function HeatmapGrid({
             pointerEvents: 'none',
             zIndex: 9999,
           }}
-          className="bg-slate-900/95 dark:bg-slate-800/95 text-white backdrop-blur-md border border-slate-700/80 rounded-xl px-3 py-2 shadow-xl text-xs space-y-1 min-w-[160px] animate-in fade-in zoom-in-95 duration-100"
+          className="bg-[var(--surface-overlay)] text-[var(--foreground)] backdrop-blur-md border border-[var(--border-subtle)] rounded-xl px-3 py-2 shadow-xl text-xs space-y-1 min-w-[160px] animate-in fade-in zoom-in-[0.98] duration-[var(--duration-quick)] [animation-timing-function:var(--ease-out)]"
         >
-          <div className="font-semibold text-slate-200 border-b border-slate-700/60 pb-1 flex items-center justify-between gap-2">
+          <div className="font-semibold text-[var(--foreground)] border-b border-[var(--border-subtle)] pb-1 flex items-center justify-between gap-2">
             <span>{formatTooltipDate(hoveredDay.dateStr)}</span>
             {hoveredDay.isToday && (
-              <span className="text-[10px] bg-indigo-500/30 text-indigo-300 px-1.5 py-0.5 rounded font-mono">
+              <span className="text-[10px] bg-[var(--accent-subtle)] text-[var(--accent)] px-1.5 py-0.5 rounded font-mono">
                 Today
               </span>
             )}
           </div>
 
           <div className="pt-0.5 space-y-0.5">
-            <div className="font-bold text-indigo-300">
+            <div className="font-bold text-[var(--accent)] flex items-center gap-1.5">
               {hoveredDay.studyMinutes > 0 ? (
-                <span>⏱️ {hoveredDay.formattedDuration} studied</span>
+                <>
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{hoveredDay.formattedDuration} studied</span>
+                </>
               ) : (
-                <span className="text-slate-400 font-normal">No activity</span>
+                <span className="text-[var(--foreground-muted)] font-normal">No activity</span>
               )}
             </div>
 
             {hoveredDay.pomodoroCount > 0 && (
-              <div className="text-[11px] text-slate-300">
-                🍅 {hoveredDay.pomodoroCount}{' '}
-                {hoveredDay.pomodoroCount === 1 ? 'Pomodoro' : 'Pomodoros'} completed
+              <div className="text-[11px] text-[var(--foreground-muted)] flex items-center gap-1.5">
+                <Timer className="w-3 h-3 text-purple-400" />
+                <span>{hoveredDay.pomodoroCount}{' '}
+                {hoveredDay.pomodoroCount === 1 ? 'Pomodoro' : 'Pomodoros'} completed</span>
               </div>
             )}
 
             {hoveredDay.notesCount > 0 && (
-              <div className="text-[11px] text-slate-300">
-                📝 {hoveredDay.notesCount} {hoveredDay.notesCount === 1 ? 'note' : 'notes'} created
+              <div className="text-[11px] text-[var(--foreground-muted)] flex items-center gap-1.5">
+                <FileText className="w-3 h-3 text-blue-400" />
+                <span>{hoveredDay.notesCount} {hoveredDay.notesCount === 1 ? 'note' : 'notes'} created</span>
               </div>
             )}
 
             {hoveredDay.tasksCompletedCount > 0 && (
-              <div className="text-[11px] text-slate-300">
-                ✅ {hoveredDay.tasksCompletedCount}{' '}
-                {hoveredDay.tasksCompletedCount === 1 ? 'task' : 'tasks'} completed
+              <div className="text-[11px] text-[var(--foreground-muted)] flex items-center gap-1.5">
+                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                <span>{hoveredDay.tasksCompletedCount}{' '}
+                {hoveredDay.tasksCompletedCount === 1 ? 'task' : 'tasks'} completed</span>
               </div>
             )}
 
@@ -441,10 +452,10 @@ export default function HeatmapGrid({
 
       {/* 4. Legend & Motivational Footer */}
       {showLegend && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[var(--foreground-muted)] pt-2 border-t border-[var(--border-subtle)]">
           <div className="flex items-center gap-1.5">
             {isDashboardMode ? (
-              <span className="text-slate-600 dark:text-slate-300 font-medium">
+              <span className="text-[var(--foreground-muted)] font-medium">
                 Keep going. You&apos;re building consistency.
               </span>
             ) : (
@@ -464,19 +475,19 @@ export default function HeatmapGrid({
                 title="Level 0: 0m"
               />
               <div
-                className="w-2.5 h-2.5 rounded-[2px] bg-indigo-200 dark:bg-indigo-950/80 border border-indigo-300 dark:border-indigo-800/60"
+                className="w-2.5 h-2.5 rounded-[2px] bg-purple-100 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-900/60"
                 title="Level 1: 1–20m"
               />
               <div
-                className="w-2.5 h-2.5 rounded-[2px] bg-indigo-400 dark:bg-indigo-700 border border-indigo-500 dark:border-indigo-600"
+                className="w-2.5 h-2.5 rounded-[2px] bg-purple-300 dark:bg-purple-800/90 border border-purple-400 dark:border-purple-700"
                 title="Level 2: 21–45m"
               />
               <div
-                className="w-2.5 h-2.5 rounded-[2px] bg-indigo-600 dark:bg-indigo-500 border border-indigo-700 dark:border-indigo-400"
+                className="w-2.5 h-2.5 rounded-[2px] bg-purple-500 dark:bg-purple-600 border border-purple-600 dark:border-purple-500"
                 title="Level 3: 46–90m"
               />
               <div
-                className="w-2.5 h-2.5 rounded-[2px] bg-indigo-800 dark:bg-indigo-400 border border-indigo-900 dark:border-indigo-300"
+                className="w-2.5 h-2.5 rounded-[2px] bg-purple-700 dark:bg-purple-400 border border-purple-800 dark:border-purple-300"
                 title="Level 4: 90m+"
               />
             </div>

@@ -14,6 +14,8 @@ export interface VideoTimestampNote {
 export interface VideoTimestampNoteWithDetails extends VideoTimestampNote {
   video: YoutubeVideo | null
   savedVideoId?: string | null
+  playlists?: { id: string; title: string }[]
+  matchedSubjects?: { id: string; name: string; code: string | null }[]
 }
 
 export interface CreateTimestampNoteInput {
@@ -25,14 +27,14 @@ export interface CreateTimestampNoteInput {
 
 /**
  * Fetches all timestamp notes across all videos for a user,
- * joined with video details and saved_video ID for direct playback linking.
+ * joined with video details, saved_video ID, and associated saved playlists.
  */
 export async function getAllNotesForUser(
   userId: string
 ): Promise<VideoTimestampNoteWithDetails[]> {
   const supabase = await createClient()
 
-  const [notesRes, savedVideosRes] = await Promise.all([
+  const [notesRes, savedVideosRes, savedPlaylistsRes, subjectsRes] = await Promise.all([
     supabase
       .from('video_timestamp_notes')
       .select(`
@@ -46,6 +48,21 @@ export async function getAllNotesForUser(
       .from('saved_videos')
       .select('id, video_id')
       .eq('user_id', userId),
+
+    supabase
+      .from('saved_playlists')
+      .select(`
+        id,
+        playlist_id,
+        playlist:youtube_playlists (id, title)
+      `)
+      .eq('user_id', userId),
+
+    supabase
+      .from('subjects')
+      .select('id, name, code')
+      .eq('user_id', userId)
+      .eq('is_archived', false),
   ])
 
   if (notesRes.error) {
@@ -65,11 +82,66 @@ export async function getAllNotesForUser(
     }
   }
 
-  return notes.map((note) => ({
-    ...note,
-    video: (note.video as unknown as YoutubeVideo) || null,
-    savedVideoId: savedVideoMap.get(note.video_id) || null,
-  }))
+  // Map videos to their parent playlists
+  const videoToPlaylistsMap = new Map<string, { id: string; title: string }[]>()
+  const savedPlaylists = savedPlaylistsRes.data || []
+  const playlistIds = savedPlaylists.map((sp) => sp.playlist_id).filter(Boolean)
+
+  if (playlistIds.length > 0) {
+    const { data: items } = await supabase
+      .from('playlist_items')
+      .select('playlist_id, video_id')
+      .in('playlist_id', playlistIds)
+
+    if (items) {
+      const playlistMetaMap = new Map<string, { id: string; title: string }>()
+      for (const sp of savedPlaylists) {
+        const pl = sp.playlist as unknown as { id: string; title: string } | null
+        if (pl) {
+          playlistMetaMap.set(sp.playlist_id, { id: pl.id || sp.playlist_id, title: pl.title })
+        }
+      }
+
+      for (const it of items) {
+        const meta = playlistMetaMap.get(it.playlist_id)
+        if (meta) {
+          const existing = videoToPlaylistsMap.get(it.video_id) || []
+          if (!existing.some((p) => p.id === meta.id)) {
+            existing.push(meta)
+          }
+          videoToPlaylistsMap.set(it.video_id, existing)
+        }
+      }
+    }
+  }
+
+  const subjectsList = subjectsRes.data || []
+
+  return notes.map((note) => {
+    const videoTitle = (note.video as unknown as YoutubeVideo)?.title?.toLowerCase() || ''
+    const contentText = note.content?.toLowerCase() || ''
+    const playlistTitles = (videoToPlaylistsMap.get(note.video_id) || []).map((p) => p.title.toLowerCase())
+
+    const matchedSubjects = subjectsList.filter((s) => {
+      const sName = s.name.toLowerCase().trim()
+      const sCode = s.code?.toLowerCase().trim()
+      if (sName && (videoTitle.includes(sName) || contentText.includes(sName) || playlistTitles.some((pt) => pt.includes(sName)))) {
+        return true
+      }
+      if (sCode && sCode.length >= 3 && (videoTitle.includes(sCode) || contentText.includes(sCode) || playlistTitles.some((pt) => pt.includes(sCode)))) {
+        return true
+      }
+      return false
+    })
+
+    return {
+      ...note,
+      video: (note.video as unknown as YoutubeVideo) || null,
+      savedVideoId: savedVideoMap.get(note.video_id) || null,
+      playlists: videoToPlaylistsMap.get(note.video_id) || [],
+      matchedSubjects: matchedSubjects.map((s) => ({ id: s.id, name: s.name, code: s.code })),
+    }
+  })
 }
 
 /**

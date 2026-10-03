@@ -121,10 +121,10 @@ function AddNoteButtonComponent(
   }
 
   return (
-    <div className="bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 rounded-xl p-3.5 shadow-xs transition-all animate-fadeIn">
+    <div className="bg-[var(--surface-raised)] border border-[var(--border-subtle)] rounded-xl p-3.5 shadow-xs transition-all animate-fadeIn">
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-600 dark:bg-indigo-500 text-white font-mono text-xs font-semibold shadow-2xs">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--accent)] text-white font-mono text-xs font-semibold shadow-2xs">
             <svg
               className="w-3 h-3"
               fill="none"
@@ -140,13 +140,13 @@ function AddNoteButtonComponent(
             </svg>
             <span>{formatDuration(capturedSeconds)}</span>
           </span>
-          <span className="text-xs text-indigo-900 dark:text-indigo-200 font-medium">New Timestamp Note</span>
+          <span className="text-xs text-[var(--text-primary)] font-medium">New Timestamp Note</span>
         </div>
 
         <button
           type="button"
           onClick={handleCancel}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded cursor-pointer"
+          className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-1 rounded cursor-pointer"
           title="Cancel Note (Ctrl+Z)"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -164,31 +164,31 @@ function AddNoteButtonComponent(
           placeholder="What's happening at this moment? (Press Ctrl+Enter to save, Ctrl+Z to cancel)"
           rows={3}
           disabled={isPending}
-          className="w-full text-xs text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-800 rounded-lg p-2.5 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-400 dark:placeholder-gray-500 resize-none shadow-2xs"
+          className="w-full text-xs text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border-subtle)] rounded-xl p-2.5 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] placeholder:text-[var(--text-muted)] resize-none shadow-2xs"
         />
 
         {error && (
-          <p className="text-[11px] text-red-600 dark:text-red-400 font-medium bg-red-50 dark:bg-red-950/40 p-1.5 rounded border border-red-100 dark:border-red-900">
+          <p className="text-[11px] text-[var(--danger)] font-medium bg-[var(--danger-muted)] p-1.5 rounded-lg border border-[var(--danger-border)]">
             {error}
           </p>
         )}
 
         <div className="flex items-center justify-between gap-2 pt-1">
-          <span className="text-[10px] text-gray-400 dark:text-gray-500">Ctrl+Enter to save • Ctrl+Z to cancel</span>
+          <span className="text-[10px] text-[var(--text-muted)]">Ctrl+Enter to save • Ctrl+Z to cancel</span>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleCancel}
               disabled={isPending}
-              className="px-2.5 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors cursor-pointer"
+              className="px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface)] hover:bg-[var(--surface-raised)] border border-[var(--border-subtle)] rounded-lg transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending || !content.trim()}
-              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-2xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] active:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-2xs transition-all cursor-pointer"
             >
               {isPending ? (
                 <>

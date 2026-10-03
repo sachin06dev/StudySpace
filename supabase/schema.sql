@@ -474,11 +474,15 @@ CREATE TABLE IF NOT EXISTS public.documents (
     mime_type TEXT NOT NULL,
     file_size_bytes BIGINT NOT NULL,
     category TEXT,
+    storage_provider TEXT NOT NULL DEFAULT 'supabase',
+    storage_key TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_documents_user_id ON public.documents(user_id);
+CREATE INDEX IF NOT EXISTS idx_documents_user_storage_provider ON public.documents(user_id, storage_provider);
+CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
 
 ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 
@@ -586,4 +590,3 @@ CREATE POLICY "Users can delete their own categories"
     ON public.user_categories FOR DELETE
     TO authenticated
     USING ((select auth.uid()) = user_id);
-

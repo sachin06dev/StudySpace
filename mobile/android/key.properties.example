@@ -1,0 +1,14 @@
+# StudySpace Android Release Signing Configuration Template
+# DO NOT commit the actual key.properties file or keystores to Git!
+# Copy this file to key.properties and configure with local release signing credentials.
+#
+# Alternatively, configure via environment variables:
+# STUDYSPACE_KEYSTORE_PATH
+# STUDYSPACE_KEYSTORE_PASSWORD
+# STUDYSPACE_KEY_ALIAS
+# STUDYSPACE_KEY_PASSWORD
+
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=YOUR_KEY_ALIAS
+storeFile=../studyspace-release.jks

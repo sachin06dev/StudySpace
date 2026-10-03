@@ -2,11 +2,12 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getSavedVideo } from '@/lib/data/videos'
 import { getNotesForVideo } from '@/lib/data/timestampNotes'
-import VideoWatchView from '@/components/videos/VideoWatchView'
+import { getPlaylistWithItems, findUserPlaylistForVideo } from '@/lib/data/playlists'
+import VideoWatchView, { type PlaylistNavInfo } from '@/components/videos/VideoWatchView'
 
 interface VideoDetailPageProps {
   params: Promise<{ videoId: string }>
-  searchParams?: Promise<{ fromPlaylist?: string }>
+  searchParams?: Promise<{ fromPlaylist?: string; t?: string }>
 }
 
 export async function generateMetadata({ params }: VideoDetailPageProps) {
@@ -30,7 +31,9 @@ export async function generateMetadata({ params }: VideoDetailPageProps) {
 export default async function VideoDetailPage({ params, searchParams }: VideoDetailPageProps) {
   const { videoId } = await params
   const resolvedSearchParams = searchParams ? await searchParams : undefined
-  const fromPlaylist = resolvedSearchParams?.fromPlaylist
+  const initialTimestamp = resolvedSearchParams?.t
+    ? parseInt(resolvedSearchParams.t, 10)
+    : undefined
 
   const supabase = await createClient()
   const {
@@ -47,13 +50,49 @@ export default async function VideoDetailPage({ params, searchParams }: VideoDet
     notFound()
   }
 
-  const initialNotes = await getNotesForVideo(user.id, savedVideo.video_id)
+  // Resolve playlist ID: either explicitly supplied via URL or discovered from user's playlists
+  let activePlaylistId = resolvedSearchParams?.fromPlaylist
+  if (!activePlaylistId) {
+    activePlaylistId = (await findUserPlaylistForVideo(user.id, savedVideo.video_id)) || undefined
+  }
+
+  const [initialNotes, playlistData] = await Promise.all([
+    getNotesForVideo(user.id, savedVideo.video_id),
+    activePlaylistId ? getPlaylistWithItems(user.id, activePlaylistId) : Promise.resolve(null),
+  ])
+
+  let playlistNav: PlaylistNavInfo | null = null
+  if (playlistData) {
+    const items = playlistData.items
+    const currentIndex = items.findIndex(
+      (item) => item.savedVideo.id === savedVideo.id || item.video_id === savedVideo.video_id
+    )
+    if (currentIndex !== -1) {
+      const prevItem = currentIndex > 0 ? items[currentIndex - 1] : null
+      const nextItem = currentIndex < items.length - 1 ? items[currentIndex + 1] : null
+      playlistNav = {
+        playlistId: playlistData.playlist.id,
+        playlistTitle: playlistData.playlist.title,
+        currentIndex: currentIndex + 1,
+        totalVideos: items.length,
+        previousVideo: prevItem
+          ? { id: prevItem.savedVideo.id, title: prevItem.video.title }
+          : null,
+        nextVideo: nextItem
+          ? { id: nextItem.savedVideo.id, title: nextItem.video.title }
+          : null,
+      }
+    }
+  }
 
   return (
     <VideoWatchView
+      key={savedVideo.id}
       savedVideo={savedVideo}
       initialNotes={initialNotes}
-      fromPlaylist={fromPlaylist}
+      fromPlaylist={activePlaylistId}
+      initialTimestamp={!isNaN(initialTimestamp as number) ? initialTimestamp : undefined}
+      playlistNav={playlistNav}
     />
   )
 }

@@ -33,12 +33,12 @@ export default function PreviewTopBar({
       {/* Right: Interactive Transparency Badge */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Transparent Demo Indicator Badge */}
-        <div className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-indigo-50/90 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 shadow-2xs">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping shrink-0" />
+        <div className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-violet-50/90 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border border-violet-200/80 dark:border-violet-800/80 shadow-2xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-ping shrink-0" />
           <span className="font-semibold tracking-wide whitespace-nowrap">
             <span className="hidden min-[360px]:inline">Interactive </span>Preview
           </span>
-          <span className="text-indigo-400 dark:text-indigo-500 hidden md:inline">• Demo Data</span>
+          <span className="text-violet-400 dark:text-violet-500 hidden md:inline">• Demo Data</span>
         </div>
       </div>
     </div>

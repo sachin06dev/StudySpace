@@ -62,11 +62,11 @@ export default function AddPlaylistForm() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-xs overflow-hidden mb-8 transition-colors">
+    <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-xs overflow-hidden mb-8 transition-colors">
       <form onSubmit={handleSubmit} className="p-5">
         {/* Header */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 rounded-xl bg-[var(--accent-subtle)] border border-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] shrink-0">
             <svg
               className="w-4 h-4"
               fill="none"
@@ -82,9 +82,9 @@ export default function AddPlaylistForm() {
             </svg>
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Add YouTube Playlist</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Paste a YouTube playlist link to fetch metadata, catalog all its videos, and save it to your library.
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">Add Course / Playlist</h2>
+            <p className="text-xs text-[var(--text-muted)]">
+              Import a complete YouTube playlist to catalog all its lectures and curriculum in order.
             </p>
           </div>
         </div>
@@ -92,42 +92,34 @@ export default function AddPlaylistForm() {
         {/* Alerts */}
         {error && (
           <div
-            className={`mb-4 p-3 rounded-lg text-xs flex items-center justify-between transition-all ${
+            className={`mb-4 p-3 rounded-xl text-xs flex items-center justify-between transition-all ${
               isWarning
-                ? 'bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300'
-                : 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+                ? 'bg-[var(--warning-muted)] border border-[var(--warning-border)] text-[var(--warning)]'
+                : 'bg-[var(--danger-muted)] border border-[var(--danger-border)] text-[var(--danger)]'
             }`}
           >
             <div className="flex items-center gap-2">
-              {isWarning ? (
-                <svg
-                  className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+              <svg
+                className="w-4 h-4 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                {isWarning ? (
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth="2"
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   />
-                </svg>
-              ) : (
-                <svg
-                  className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+                ) : (
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth="2"
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
-                </svg>
-              )}
+                )}
+              </svg>
               <span>{error}</span>
             </div>
             <button
@@ -141,18 +133,18 @@ export default function AddPlaylistForm() {
         )}
 
         {successMessage && (
-          <div className="mb-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between animate-in fade-in-50">
+          <div className="mb-4 p-3 rounded-xl bg-[var(--success-muted)] border border-[var(--success-border)] text-[var(--success)] text-xs flex items-center justify-between animate-in fade-in-50">
             <div className="flex items-center gap-2">
               <svg
-                className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0"
+                className="w-4 h-4 shrink-0"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                strokeWidth="2.5"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
                   d="M5 13l4 4L19 7"
                 />
               </svg>
@@ -161,7 +153,7 @@ export default function AddPlaylistForm() {
             <button
               type="button"
               onClick={() => setSuccessMessage(null)}
-              className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 font-semibold cursor-pointer"
+              className="font-semibold cursor-pointer hover:opacity-80"
             >
               Dismiss
             </button>
@@ -177,13 +169,13 @@ export default function AddPlaylistForm() {
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://www.youtube.com/playlist?list=..."
               disabled={isPending}
-              className="w-full text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 focus:border-red-500 focus:ring-1 focus:ring-red-500 focus:outline-hidden transition-all disabled:opacity-60"
+              className="w-full text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] bg-[var(--surface-raised)] rounded-xl px-3.5 py-2.5 border border-[var(--border-subtle)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none transition-all disabled:opacity-60"
             />
             {url && !isPending && (
               <button
                 type="button"
                 onClick={() => setUrl('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-xs cursor-pointer p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs cursor-pointer p-1"
                 title="Clear input"
               >
                 ✕
@@ -194,7 +186,7 @@ export default function AddPlaylistForm() {
           <button
             type="submit"
             disabled={isPending || !url.trim()}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs transition-colors cursor-pointer shrink-0"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] active:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs transition-colors cursor-pointer shrink-0"
           >
             {isPending ? (
               <>
@@ -217,7 +209,7 @@ export default function AddPlaylistForm() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                <span>Fetching & Syncing...</span>
+                <span>Importing...</span>
               </>
             ) : (
               <>
@@ -234,7 +226,7 @@ export default function AddPlaylistForm() {
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                <span>Save Playlist</span>
+                <span>Import Playlist</span>
               </>
             )}
           </button>
@@ -242,9 +234,9 @@ export default function AddPlaylistForm() {
 
         {/* Informative loading note */}
         {isPending && (
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-2.5 flex items-center gap-1.5 animate-pulse">
+          <p className="text-[11px] text-[var(--text-muted)] mt-2.5 flex items-center gap-1.5 animate-pulse">
             <svg
-              className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500"
+              className="w-3.5 h-3.5 text-[var(--accent)]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -256,7 +248,7 @@ export default function AddPlaylistForm() {
                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>Fetching playlist details and syncing all videos... This may take a few seconds for large playlists.</span>
+            <span>Fetching playlist details and syncing all lessons... This may take a moment.</span>
           </p>
         )}
       </form>

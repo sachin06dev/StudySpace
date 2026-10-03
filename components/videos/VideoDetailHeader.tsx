@@ -6,11 +6,21 @@ import { useRouter } from 'next/navigation'
 import { markVideoCompleted } from '@/lib/actions/videos'
 import type { SavedVideoWithDetails, VideoStatus } from '@/lib/data/videos'
 
+export interface VideoPlaylistNavInfo {
+  playlistId: string
+  playlistTitle?: string
+  currentIndex: number
+  totalVideos: number
+  previousVideo?: { id: string; title: string } | null
+  nextVideo?: { id: string; title: string } | null
+}
+
 interface VideoDetailHeaderProps {
   savedVideo: SavedVideoWithDetails
   currentStatus: VideoStatus
   currentSeconds: number
   fromPlaylist?: string
+  playlistNav?: VideoPlaylistNavInfo | null
   onStatusToggle?: (newStatus: VideoStatus) => void
 }
 
@@ -19,6 +29,7 @@ export default function VideoDetailHeader({
   currentStatus,
   currentSeconds,
   fromPlaylist,
+  playlistNav,
   onStatusToggle,
 }: VideoDetailHeaderProps) {
   const router = useRouter()
@@ -63,12 +74,12 @@ export default function VideoDetailHeader({
   return (
     <div className="space-y-2">
       {error && (
-        <div className="p-2 bg-red-50 border border-red-200 text-xs text-red-600 rounded-lg flex justify-between items-center">
+        <div className="p-2.5 rounded-xl bg-[var(--danger-muted)] border border-[var(--danger-border)] text-xs text-[var(--danger)] flex justify-between items-center animate-in fade-in-50">
           <span>{error}</span>
           <button
             type="button"
             onClick={() => setError(null)}
-            className="text-red-500 hover:text-red-700 font-semibold cursor-pointer"
+            className="text-[var(--danger)] hover:opacity-80 font-semibold cursor-pointer"
           >
             ✕
           </button>
@@ -79,7 +90,7 @@ export default function VideoDetailHeader({
         {/* Back Link */}
         <Link
           href={fromPlaylist ? `/playlists/${fromPlaylist}` : '/videos'}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors min-h-[36px] py-1"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors min-h-[36px] py-1 cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -87,27 +98,68 @@ export default function VideoDetailHeader({
           <span>{fromPlaylist ? 'Back to Playlist' : 'Back to Videos'}</span>
         </Link>
 
+        {/* Middle/Right: Playlist Navigation (if from playlist) */}
+        {playlistNav && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[var(--text-muted)] font-mono font-medium hidden sm:inline-block">
+              Lesson {playlistNav.currentIndex} of {playlistNav.totalVideos}
+            </span>
+            <div className="flex items-center gap-1.5">
+              {playlistNav.previousVideo ? (
+                <Link
+                  href={`/videos/${playlistNav.previousVideo.id}?fromPlaylist=${encodeURIComponent(playlistNav.playlistId)}`}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent)] transition-all cursor-pointer"
+                  title={`Previous Lesson: ${playlistNav.previousVideo.title} (Shift+P)`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="hidden sm:inline">Previous Lesson</span>
+                  <span className="sm:hidden">Prev</span>
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[var(--text-muted)] opacity-40 cursor-not-allowed">
+                  ‹ Prev
+                </span>
+              )}
+              {playlistNav.nextVideo ? (
+                <Link
+                  href={`/videos/${playlistNav.nextVideo.id}?fromPlaylist=${encodeURIComponent(playlistNav.playlistId)}`}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-xl border border-[var(--accent)]/40 bg-[var(--accent-muted)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-all cursor-pointer shadow-2xs"
+                  title={`Next Lesson: ${playlistNav.nextVideo.title} (Shift+N)`}
+                >
+                  <span className="hidden sm:inline">Next Lesson</span>
+                  <span className="sm:hidden">Next</span>
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              ) : (
+                <span className="px-2.5 py-1 text-xs font-semibold rounded-xl bg-[var(--success-muted)] text-[var(--success)] border border-[var(--success-border)]">
+                  Last Lesson 🎉
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Right side: Status Badge & Mark as Watched button */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Status Badge */}
           {isCompleted ? (
-            <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-xl bg-[var(--success-muted)] text-[var(--success)] border border-[var(--success-border)]">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
               <span>Completed</span>
             </span>
           ) : status === 'in_progress' ? (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-xl bg-[var(--warning-muted)] text-[var(--warning)] border border-[var(--warning-border)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--warning)] animate-pulse" />
               <span>In Progress {progressPercent > 0 ? `· ${progressPercent}%` : ''}</span>
             </span>
-          ) : status === 'not_started' ? (
-            <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full border bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700">
-              Not Started
-            </span>
           ) : (
-            <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full border bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+            <span className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-xl bg-[var(--surface-raised)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
               Saved
             </span>
           )}
@@ -119,14 +171,14 @@ export default function VideoDetailHeader({
             disabled={isPending}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl border transition-colors cursor-pointer ${
               isCompleted
-                ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                : 'bg-emerald-600 dark:bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
+                ? 'bg-[var(--surface-raised)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--surface-hover)]'
+                : 'bg-[var(--accent)] text-white border-transparent hover:bg-[var(--accent-hover)] shadow-xs'
             }`}
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>{isCompleted ? 'Mark as unwatched' : 'Mark as watched'}</span>
+            <span>{isCompleted ? 'Mark as unwatched' : 'Mark as completed'}</span>
           </button>
         </div>
       </div>

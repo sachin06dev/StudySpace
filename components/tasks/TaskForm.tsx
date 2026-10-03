@@ -1,17 +1,19 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
+import { Plus, Calendar, AlertCircle } from 'lucide-react'
 import { createTaskAction } from '@/lib/actions/tasks'
 import type { TaskPriority } from '@/lib/data/tasks'
 
 export default function TaskForm() {
   const [isPending, startTransition] = useTransition()
-  const [isOpen, setIsOpen] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<TaskPriority>('medium')
   const [dueDate, setDueDate] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -34,153 +36,142 @@ export default function TaskForm() {
       if (!res.success) {
         setError(res.error || 'Failed to create task. Please try again.')
       } else {
-        // Reset form
         setTitle('')
         setDescription('')
         setPriority('medium')
         setDueDate('')
-        setIsOpen(false)
+        setIsExpanded(false)
       }
     })
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-xs transition-all overflow-hidden mb-8">
-      <form onSubmit={handleSubmit} className="p-5">
+    <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-xs transition-all overflow-hidden">
+      <form onSubmit={handleSubmit} className="p-4 sm:p-5">
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm flex items-center justify-between">
-            <span>{error}</span>
+          <div className="mb-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span>{error}</span>
+            </span>
             <button
               type="button"
               onClick={() => setError(null)}
-              className="text-red-500 hover:text-red-700 font-semibold text-xs ml-2 cursor-pointer"
+              className="text-xs font-semibold hover:underline cursor-pointer"
             >
               Dismiss
             </button>
           </div>
         )}
 
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="task-title" className="sr-only">
-              Task Title
-            </label>
+        <div className="space-y-3">
+          {/* Quick-add main row */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-[var(--surface-muted)] text-[var(--accent)] flex items-center justify-center shrink-0 border border-[var(--border-subtle)]">
+              <Plus className="w-4 h-4" />
+            </div>
+
             <input
+              ref={inputRef}
               id="task-title"
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              onFocus={() => setIsOpen(true)}
-              placeholder="What do you need to study or work on?"
-              className="w-full text-base font-medium text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-hidden py-1 border-b border-transparent focus:border-gray-300 dark:focus:border-gray-700 transition-colors bg-transparent"
+              onFocus={() => setIsExpanded(true)}
+              placeholder="Add an academic task or assignment..."
+              className="flex-1 text-sm font-medium text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-hidden bg-transparent"
               disabled={isPending}
             />
+
+            {!isExpanded && title.trim().length > 0 && (
+              <button
+                type="submit"
+                disabled={isPending}
+                className="text-xs font-semibold text-white bg-[var(--accent)] hover:opacity-90 px-3 py-1.5 rounded-xl transition-colors shrink-0 shadow-xs"
+              >
+                Add
+              </button>
+            )}
           </div>
 
-          {/* Expandable options */}
-          {(isOpen || title.length > 0) && (
-            <div className="space-y-4 pt-2 border-t border-gray-100 dark:border-gray-800 animate-in fade-in-50 duration-150">
-              <div>
-                <label htmlFor="task-description" className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                  Description (optional)
-                </label>
-                <textarea
-                  id="task-description"
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Add details, notes, or links..."
-                  className="w-full text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-2.5 border border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden transition-all resize-y"
-                  disabled={isPending}
-                />
-              </div>
+          {/* Expandable Options */}
+          {isExpanded && (
+            <div className="space-y-3 pt-3 border-t border-[var(--border-subtle)] animate-in fade-in-50 duration-[var(--duration-fast)] [animation-timing-function:var(--ease-smooth-out)]">
+              {/* Optional Description */}
+              <textarea
+                id="task-description"
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Add assignment details, notes, or reference links..."
+                className="w-full text-xs text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] bg-[var(--surface-muted)] rounded-xl p-2.5 border border-[var(--border-subtle)] focus:outline-hidden focus:border-[var(--accent)] resize-y transition-all"
+                disabled={isPending}
+              />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Priority Selector */}
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
-                    Priority
-                  </label>
-                  <div className="flex gap-2">
+              {/* Controls bar: Priority pills + Due date + Action buttons */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Priority selector */}
+                  <div className="flex items-center gap-1 bg-[var(--surface-muted)] p-1 rounded-xl border border-[var(--border-subtle)] text-xs">
                     {(['low', 'medium', 'high'] as TaskPriority[]).map((p) => {
                       const isSelected = priority === p
-                      let activeStyle = ''
-                      if (p === 'low') {
-                        activeStyle = isSelected
-                          ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 font-semibold ring-1 ring-emerald-400 dark:ring-emerald-600'
-                          : 'bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100/70 dark:hover:bg-emerald-950/60 border-emerald-100 dark:border-emerald-900'
-                      } else if (p === 'medium') {
-                        activeStyle = isSelected
-                          ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700 font-semibold ring-1 ring-amber-400 dark:ring-amber-600'
-                          : 'bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100/70 dark:hover:bg-amber-950/60 border-amber-100 dark:border-amber-900'
-                      } else {
-                        activeStyle = isSelected
-                          ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-700 font-semibold ring-1 ring-rose-400 dark:ring-rose-600'
-                          : 'bg-rose-50/50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 hover:bg-rose-100/70 dark:hover:bg-rose-950/60 border-rose-100 dark:border-rose-900'
-                      }
-
                       return (
                         <button
                           key={p}
                           type="button"
                           onClick={() => setPriority(p)}
-                          disabled={isPending}
-                          className={`flex-1 capitalize text-xs py-1.5 px-3 rounded-lg border transition-all cursor-pointer text-center ${activeStyle}`}
+                          className={`px-2.5 py-1 rounded-lg text-xs capitalize transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[var(--surface)] text-[var(--foreground)] font-semibold shadow-xs border border-[var(--border-subtle)]'
+                              : 'text-[var(--foreground-muted)] hover:text-[var(--foreground)]'
+                          }`}
                         >
+                          {p === 'high' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5" />}
+                          {p === 'medium' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5" />}
+                          {p === 'low' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5" />}
                           {p}
                         </button>
                       )
                     })}
                   </div>
+
+                  {/* Due Date Picker */}
+                  <div className="flex items-center gap-1.5 bg-[var(--surface-muted)] px-2.5 py-1.5 rounded-xl border border-[var(--border-subtle)] text-xs text-[var(--foreground-muted)]">
+                    <Calendar className="w-3.5 h-3.5 text-[var(--foreground-muted)]" />
+                    <input
+                      id="task-due-date"
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      disabled={isPending}
+                      className="bg-transparent text-xs text-[var(--foreground)] focus:outline-hidden cursor-pointer"
+                    />
+                  </div>
                 </div>
 
-                {/* Due Date */}
-                <div>
-                  <label htmlFor="task-due-date" className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
-                    Due Date (optional)
-                  </label>
-                  <input
-                    id="task-due-date"
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
+                {/* Form Buttons */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsExpanded(false)
+                      setError(null)
+                    }}
                     disabled={isPending}
-                    className="w-full text-xs text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-2 border border-gray-200 dark:border-gray-700 focus:bg-white dark:focus:bg-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden transition-all"
-                  />
-                </div>
-              </div>
+                    className="text-xs font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
 
-              {/* Form Action Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsOpen(false)
-                    setError(null)
-                  }}
-                  disabled={isPending}
-                  className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending || !title.trim()}
-                  className="inline-flex items-center justify-center text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg shadow-xs transition-colors cursor-pointer"
-                >
-                  {isPending ? (
-                    <span className="flex items-center gap-1.5">
-                      <svg className="animate-spin h-3.5 w-3.5 text-white" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Adding...
-                    </span>
-                  ) : (
-                    'Add Task'
-                  )}
-                </button>
+                  <button
+                    type="submit"
+                    disabled={isPending || !title.trim()}
+                    className="text-xs font-semibold text-white bg-[var(--accent)] hover:opacity-90 disabled:opacity-50 px-4 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                  >
+                    {isPending ? 'Adding...' : 'Add Task'}
+                  </button>
+                </div>
               </div>
             </div>
           )}

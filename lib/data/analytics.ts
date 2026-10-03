@@ -153,17 +153,22 @@ export interface PlaylistProgressData {
 }
 
 export interface SubjectDistributionItem {
+  id?: string
   name: string
   count: number
   percentage: number
   color: string
   icon?: string | null
+  studyDurationSeconds?: number
+  formattedStudyTime?: string
 }
 
 export interface SubjectDistributionData {
   categories: SubjectDistributionItem[]
   mostStudiedSubject: string | null
   totalResources: number
+  totalStudySeconds?: number
+  formattedTotalStudyTime?: string
   hasData: boolean
 }
 
@@ -286,6 +291,14 @@ export interface FullAnalyticsData {
   milestones: MilestoneData
   insights: StudyInsightItem[]
   timezone: string
+  semesters?: {
+    id: string
+    name: string
+    startDate: string
+    endDate: string
+    isActive: boolean
+  }[]
+  selectedSemesterId?: string | null
 }
 
 export interface CompactConsistencyData {
@@ -1187,7 +1200,8 @@ function generateDeterministicInsights(
  */
 export async function getComprehensiveAnalytics(
   userId: string,
-  targetTimezone?: string | null
+  targetTimezone?: string | null,
+  semesterFilterId?: string | null
 ): Promise<FullAnalyticsData> {
   const supabase = await createClient()
 
@@ -1206,6 +1220,8 @@ export async function getComprehensiveAnalytics(
     documentsRes,
     userSettingsRes,
     customCategoriesRes,
+    semestersRes,
+    subjectsRes,
   ] = await Promise.all([
     // All focus pomodoro sessions for user
     supabase
@@ -1264,11 +1280,62 @@ export async function getComprehensiveAnalytics(
 
     // User custom categories (with metadata fallback)
     getUserCategories(userId),
+
+    // User semesters for semester filtering
+    supabase
+      .from('semesters')
+      .select('id, name, start_date, end_date, is_active')
+      .eq('user_id', userId)
+      .order('is_active', { ascending: false })
+      .order('start_date', { ascending: false }),
+
+    // User subjects for ID-based grouping
+    supabase
+      .from('subjects')
+      .select('id, name, code, semester_id')
+      .eq('user_id', userId),
   ])
 
-  const pomodoroSessions = pomodoroRes.data || []
-  const notes = notesRes.data || []
-  const tasks = tasksRes.data || []
+  const rawSemesters = semestersRes.data || []
+  const semesters = rawSemesters.map((s) => ({
+    id: s.id,
+    name: s.name,
+    startDate: s.start_date,
+    endDate: s.end_date,
+    isActive: s.is_active,
+  }))
+
+  const selectedSemester =
+    semesterFilterId && semesterFilterId !== 'all'
+      ? rawSemesters.find((s) => s.id === semesterFilterId) || null
+      : null
+
+  let pomodoroSessions = pomodoroRes.data || []
+  let notes = notesRes.data || []
+  let tasks = tasksRes.data || []
+
+  // If a semester is selected, isolate study activity to that semester's date range
+  if (selectedSemester) {
+    const semStart = new Date(selectedSemester.start_date + 'T00:00:00Z').getTime()
+    const semEnd = new Date(selectedSemester.end_date + 'T23:59:59.999Z').getTime()
+
+    pomodoroSessions = pomodoroSessions.filter((p) => {
+      const t = new Date(p.started_at).getTime()
+      return t >= semStart && t <= semEnd
+    })
+
+    notes = notes.filter((n) => {
+      const t = new Date(n.created_at).getTime()
+      return t >= semStart && t <= semEnd
+    })
+
+    tasks = tasks.filter((tk) => {
+      if (!tk.completed_at) return true
+      const t = new Date(tk.completed_at).getTime()
+      return t >= semStart && t <= semEnd
+    })
+  }
+
   const savedPlaylists = (savedPlaylistsRes.data || []).filter((p) => p.playlist)
   const resources = resourcesRes.data || []
   const documents = documentsRes.data || []
@@ -1593,24 +1660,55 @@ export async function getComprehensiveAnalytics(
     hasData: playlistItemsList.length > 0,
   }
 
-  // 9. Subject / Category Distribution
-  const categoryCountMap = new Map<string, number>()
-  let totalResourceCount = 0
-
-  for (const r of resources) {
-    if (r.category && typeof r.category === 'string' && r.category.trim()) {
-      const cat = r.category.trim()
-      categoryCountMap.set(cat, (categoryCountMap.get(cat) || 0) + 1)
-      totalResourceCount += 1
+  // 9. Subject / Category Distribution (grouped by subject ID to prevent cross-semester name collision)
+  const subjects = subjectsRes.data || []
+  const subjectByNameLower = new Map<string, { id: string; name: string; code: string | null }>()
+  for (const s of subjects) {
+    if (!selectedSemester || s.semester_id === selectedSemester.id) {
+      subjectByNameLower.set(s.name.toLowerCase().trim(), s)
+      if (s.code) {
+        subjectByNameLower.set(s.code.toLowerCase().trim(), s)
+      }
     }
   }
 
-  for (const d of documents) {
-    if (d.category && typeof d.category === 'string' && d.category.trim()) {
-      const cat = d.category.trim()
-      categoryCountMap.set(cat, (categoryCountMap.get(cat) || 0) + 1)
-      totalResourceCount += 1
+  interface GroupedCat {
+    id: string
+    name: string
+    count: number
+  }
+  const categoryMap = new Map<string, GroupedCat>()
+  let totalResourceCount = 0
+
+  const registerItem = (catRaw: string | null | undefined) => {
+    if (!catRaw || typeof catRaw !== 'string' || !catRaw.trim()) return
+    const rawTrimmed = catRaw.trim()
+    const rawLower = rawTrimmed.toLowerCase()
+
+    const matchedSubject = subjectByNameLower.get(rawLower)
+    const key = matchedSubject ? `subj-${matchedSubject.id}` : `cat-${rawLower}`
+    const displayName = matchedSubject
+      ? (matchedSubject.code ? `${matchedSubject.name} (${matchedSubject.code})` : matchedSubject.name)
+      : rawTrimmed
+
+    const existing = categoryMap.get(key)
+    if (existing) {
+      existing.count += 1
+    } else {
+      categoryMap.set(key, {
+        id: key,
+        name: displayName,
+        count: 1,
+      })
     }
+    totalResourceCount += 1
+  }
+
+  for (const r of resources) {
+    registerItem(r.category)
+  }
+  for (const d of documents) {
+    registerItem(d.category)
   }
 
   const colorPalette = [
@@ -1630,24 +1728,32 @@ export async function getComprehensiveAnalytics(
   let maxCatCount = 0
 
   let colorIdx = 0
-  for (const [catName, count] of categoryCountMap.entries()) {
-    const percentage = totalResourceCount > 0 ? Math.round((count / totalResourceCount) * 100) : 0
-    if (count > maxCatCount) {
-      maxCatCount = count
-      mostStudiedSubject = catName
+  for (const item of categoryMap.values()) {
+    const percentage = totalResourceCount > 0 ? Math.round((item.count / totalResourceCount) * 100) : 0
+    if (item.count > maxCatCount) {
+      maxCatCount = item.count
+      mostStudiedSubject = item.name
     }
 
     // Check if preset has icon or custom category has icon
-    const preset = PRESET_CATEGORIES.find((p) => p.name.toLowerCase() === catName.toLowerCase())
-    const custom = customCategories.find((c: { name?: string; icon?: string | null }) => c.name?.toLowerCase() === catName.toLowerCase())
+    const preset = PRESET_CATEGORIES.find((p) => p.name.toLowerCase() === item.name.toLowerCase())
+    const custom = customCategories.find((c: { name?: string; icon?: string | null }) => c.name?.toLowerCase() === item.name.toLowerCase())
     const icon = custom?.icon || preset?.icon || null
 
+    // Compute approximate study time proportion based on total focus seconds
+    const estSubjectSeconds = totalPomodoroFocusSeconds > 0 && totalResourceCount > 0
+      ? Math.round((item.count / totalResourceCount) * totalPomodoroFocusSeconds)
+      : 0
+
     categories.push({
-      name: catName,
-      count,
+      id: item.id,
+      name: item.name,
+      count: item.count,
       percentage,
       color: colorPalette[colorIdx % colorPalette.length],
       icon,
+      studyDurationSeconds: estSubjectSeconds,
+      formattedStudyTime: estSubjectSeconds > 0 ? formatStudyDuration(Math.round(estSubjectSeconds / 60)) : undefined,
     })
     colorIdx += 1
   }
@@ -1658,6 +1764,8 @@ export async function getComprehensiveAnalytics(
     categories,
     mostStudiedSubject,
     totalResources: totalResourceCount,
+    totalStudySeconds: totalPomodoroFocusSeconds,
+    formattedTotalStudyTime: formatStudyDuration(Math.round(totalPomodoroFocusSeconds / 60)),
     hasData: categories.length > 0,
   }
 
@@ -1788,6 +1896,8 @@ export async function getComprehensiveAnalytics(
     milestones,
     insights,
     timezone: userTimezone,
+    semesters,
+    selectedSemesterId: selectedSemester?.id || 'all',
   }
 }
 

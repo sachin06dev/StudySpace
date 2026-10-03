@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Calendar, CheckCircle2, ChevronDown, ChevronUp, AlertCircle, Clock } from 'lucide-react'
 import TaskItem from './TaskItem'
 import StatsPill from '@/components/shared/StatsPill'
 import {
@@ -9,6 +10,7 @@ import {
   updateTaskAction,
 } from '@/lib/actions/tasks'
 import type { Task } from '@/lib/data/tasks'
+import { realtimeEventBus } from '@/lib/realtime/eventBus'
 
 interface TaskListProps {
   tasks: Task[]
@@ -20,14 +22,59 @@ export default function TaskList({ tasks }: TaskListProps) {
   const [showCompleted, setShowCompleted] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  // Listen to cross-client real-time events on tasks
+  useEffect(() => {
+    const unsubscribe = realtimeEventBus.subscribe<Task>('tasks', (payload) => {
+      if (payload.eventType === 'DELETE') {
+        const deletedId = (payload.old?.id || payload.new?.id) as string
+        if (deletedId) {
+          setItems((current) => current.filter((t) => t.id !== deletedId))
+        }
+      } else if (payload.eventType === 'INSERT') {
+        if (payload.new && payload.new.id) {
+          setItems((current) => {
+            if (current.some((t) => t.id === payload.new.id)) return current
+            return [payload.new as Task, ...current]
+          })
+        }
+      } else if (payload.eventType === 'UPDATE') {
+        if (payload.new && payload.new.id) {
+          setItems((current) =>
+            current.map((t) => (t.id === payload.new.id ? (payload.new as Task) : t))
+          )
+        }
+      }
+    })
+
+    return () => unsubscribe()
+  }, [])
+
   // Sync state with server-provided tasks when prop changes
   if (prevTasks !== tasks) {
     setPrevTasks(tasks)
     setItems(tasks)
   }
 
+  const isTodayOrOverdue = (task: Task) => {
+    if (!task.due_date) return false
+    try {
+      const [year, month, day] = task.due_date.split('-').map(Number)
+      if (!year || !month || !day) return false
+      const target = new Date(year, month - 1, day)
+      target.setHours(23, 59, 59, 999)
+      const todayEnd = new Date()
+      todayEnd.setHours(23, 59, 59, 999)
+      return target.getTime() <= todayEnd.getTime()
+    } catch {
+      return false
+    }
+  }
+
   const pendingTasks = items.filter((t) => t.status === 'pending')
   const completedTasks = items.filter((t) => t.status === 'completed')
+
+  const todayTasks = pendingTasks.filter(isTodayOrOverdue)
+  const upcomingTasks = pendingTasks.filter((t) => !isTodayOrOverdue(t))
 
   // Optimistic Toggle Handler
   const handleToggle = async (task: Task) => {
@@ -113,19 +160,13 @@ export default function TaskList({ tasks }: TaskListProps) {
 
   if (items.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-dashed border-gray-300 dark:border-gray-800 p-12 text-center transition-colors">
-        <div className="mx-auto w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4">
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-            />
-          </svg>
+      <div className="bg-[var(--surface)] rounded-2xl border border-dashed border-[var(--border-subtle)] p-12 text-center transition-colors">
+        <div className="mx-auto w-12 h-12 rounded-xl bg-[var(--surface-muted)] text-[var(--accent)] flex items-center justify-center mb-3 border border-[var(--border-subtle)]">
+          <CheckCircle2 className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">No tasks yet</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-          Create your first task above to start organizing your study goals and assignments.
+        <h3 className="text-base font-semibold text-[var(--foreground)] mb-1">No tasks yet</h3>
+        <p className="text-xs text-[var(--foreground-muted)] max-w-sm mx-auto leading-relaxed">
+          Create your first academic task above to organize coursework, exam prep, and deadlines.
         </p>
       </div>
     )
@@ -133,8 +174,11 @@ export default function TaskList({ tasks }: TaskListProps) {
 
   return (
     <div className="space-y-6">
-      {/* Dynamic Stats Pill updated instantly on every interaction */}
-      <div className="flex justify-end -mt-2">
+      {/* Dynamic Stats Pill */}
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-[var(--foreground-muted)] font-medium">
+          {pendingTasks.length} active {pendingTasks.length === 1 ? 'task' : 'tasks'}
+        </div>
         <StatsPill
           items={[
             { value: pendingTasks.length, label: 'pending' },
@@ -143,38 +187,73 @@ export default function TaskList({ tasks }: TaskListProps) {
         />
       </div>
 
-      {/* Global Task Error Banner if an action fails & rolls back */}
+      {/* Global Task Error Banner */}
       {errorMessage && (
-        <div className="p-3.5 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-xl text-xs text-red-700 dark:text-red-300 flex justify-between items-center animate-in fade-in-50">
-          <span className="font-medium">{errorMessage}</span>
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-600 dark:text-rose-400 flex justify-between items-center animate-in fade-in-50">
+          <span className="flex items-center gap-1.5 font-medium">
+            <AlertCircle className="w-4 h-4" />
+            <span>{errorMessage}</span>
+          </span>
           <button
             type="button"
             onClick={() => setErrorMessage(null)}
-            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 font-semibold ml-3 cursor-pointer"
+            className="font-semibold hover:underline ml-3 cursor-pointer"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Pending Tasks Section */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2">
-            <span>To Do</span>
-            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-              {pendingTasks.length}
+      {/* 1. Today / Overdue Section */}
+      {todayTasks.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold text-[var(--foreground)] uppercase tracking-wider flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+              <span>Today & Overdue</span>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                {todayTasks.length}
+              </span>
+            </h2>
+          </div>
+
+          <div className="space-y-2">
+            {todayTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+                onUpdate={handleUpdate}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 2. Upcoming / Backlog Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-bold text-[var(--foreground-muted)] uppercase tracking-wider flex items-center gap-2">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Upcoming & Backlog</span>
+            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--surface-muted)] text-[var(--foreground-muted)] border border-[var(--border-subtle)]">
+              {upcomingTasks.length}
             </span>
           </h2>
         </div>
 
-        {pendingTasks.length === 0 ? (
-          <div className="bg-white/60 dark:bg-gray-800/40 rounded-xl border border-gray-200/80 dark:border-gray-800 p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            🎉 All pending tasks are done! Great job.
+        {upcomingTasks.length === 0 && todayTasks.length === 0 ? (
+          <div className="bg-[var(--surface-muted)] rounded-2xl border border-[var(--border-subtle)] p-6 text-center text-xs text-[var(--foreground-muted)]">
+            All pending tasks are done. Great job.
+          </div>
+        ) : upcomingTasks.length === 0 ? (
+          <div className="bg-[var(--surface-muted)] rounded-2xl border border-[var(--border-subtle)] p-4 text-center text-xs text-[var(--foreground-muted)]">
+            No upcoming tasks beyond today.
           </div>
         ) : (
-          <div className="space-y-2.5">
-            {pendingTasks.map((task) => (
+          <div className="space-y-2">
+            {upcomingTasks.map((task) => (
               <TaskItem
                 key={task.id}
                 task={task}
@@ -187,27 +266,30 @@ export default function TaskList({ tasks }: TaskListProps) {
         )}
       </div>
 
-      {/* Completed Tasks Section */}
+      {/* 3. Completed Section (Collapsible) */}
       {completedTasks.length > 0 && (
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="pt-4 border-t border-[var(--border-subtle)] space-y-3">
           <button
             type="button"
             onClick={() => setShowCompleted(!showCompleted)}
-            className="w-full flex items-center justify-between mb-3 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer group"
+            className="w-full flex items-center justify-between text-xs font-bold text-[var(--foreground-muted)] uppercase tracking-wider hover:text-[var(--foreground)] transition-colors cursor-pointer group"
           >
             <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
               <span>Completed</span>
-              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[var(--surface-muted)] text-[var(--foreground-muted)] border border-[var(--border-subtle)]">
                 {completedTasks.length}
               </span>
             </div>
-            <span className="text-xs font-normal lowercase text-indigo-600 dark:text-indigo-400 hover:underline">
-              {showCompleted ? 'Hide' : 'Show'}
+
+            <span className="text-xs font-normal lowercase text-[var(--accent)] hover:underline flex items-center gap-1">
+              <span>{showCompleted ? 'Hide' : 'Show'}</span>
+              {showCompleted ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </span>
           </button>
 
           {showCompleted && (
-            <div className="space-y-2.5 animate-in fade-in-50 duration-150">
+            <div className="space-y-2 animate-in fade-in-50 duration-150">
               {completedTasks.map((task) => (
                 <TaskItem
                   key={task.id}
@@ -224,4 +306,3 @@ export default function TaskList({ tasks }: TaskListProps) {
     </div>
   )
 }
-

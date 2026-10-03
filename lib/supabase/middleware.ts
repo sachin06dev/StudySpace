@@ -32,7 +32,29 @@ export async function updateSession(request: NextRequest) {
   // issues with users being randomly logged out.
 
   // IMPORTANT: DO NOT REMOVE auth.getUser()
-  await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Server-side session invalidation: if client presents a device cookie that is marked revoked, clear session
+  const clientDeviceId = request.cookies.get('studyspace_device_id')?.value
+  if (user && clientDeviceId) {
+    try {
+      const { data: device } = await supabase
+        .from('user_devices')
+        .select('is_revoked')
+        .eq('user_id', user.id)
+        .eq('device_id', clientDeviceId)
+        .maybeSingle()
+
+      if (device && device.is_revoked) {
+        await supabase.auth.signOut()
+        return NextResponse.redirect(new URL('/login?revoked=true', request.url))
+      }
+    } catch {
+      // Table may not exist or network glitch; fail open to avoid trapping legitimate users
+    }
+  }
 
   return supabaseResponse
 }

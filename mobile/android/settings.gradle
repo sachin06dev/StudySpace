@@ -1,0 +1,55 @@
+pluginManagement {
+    def flutterSdkPath = {
+        def properties = new Properties()
+        def localPropertiesFile = file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.withReader("UTF-8") { reader ->
+                properties.load(reader)
+            }
+        }
+        def flutterSdkPath = properties.getProperty("flutter.sdk")
+        if (flutterSdkPath == null) {
+            flutterSdkPath = System.getenv("FLUTTER_ROOT")
+        }
+        if (flutterSdkPath == null) {
+            flutterSdkPath = System.getenv("FLUTTER_HOME")
+        }
+        if (flutterSdkPath == null) {
+            try {
+                def pathSep = File.pathSeparator
+                def pathEnv = System.getenv("PATH") ?: ""
+                for (String entry : pathEnv.split(java.util.regex.Pattern.quote(pathSep))) {
+                    if (entry.trim().isEmpty()) continue
+                    def flutterBin = new File(entry, "flutter")
+                    def flutterBat = new File(entry, "flutter.bat")
+                    if (flutterBin.exists() || flutterBat.exists()) {
+                        def binDir = flutterBin.exists() ? flutterBin.parentFile : flutterBat.parentFile
+                        if (binDir != null && binDir.name == "bin") {
+                            flutterSdkPath = binDir.parentFile.absolutePath
+                            break
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        assert flutterSdkPath != null : "Flutter SDK not found. Define location with flutter.sdk in local.properties or with the FLUTTER_ROOT environment variable."
+        return flutterSdkPath
+    }
+    settings.ext.flutterSdkPath = flutterSdkPath()
+
+    includeBuild("${settings.ext.flutterSdkPath}/packages/flutter_tools/gradle")
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+    id "com.android.application" version "8.13.2" apply false
+    id "org.jetbrains.kotlin.android" version "2.4.0" apply false
+}
+
+include ":app"

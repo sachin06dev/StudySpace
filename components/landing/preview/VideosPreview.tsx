@@ -48,9 +48,15 @@ export default function VideosPreview({ initialTimestampSecs }: VideosPreviewPro
   }, [isPlaying])
 
   const formatDuration = (secs: number) => {
-    const m = Math.floor(secs / 60)
+    const hrs = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
     const s = Math.floor(secs % 60)
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    const padM = m.toString().padStart(2, '0')
+    const padS = s.toString().padStart(2, '0')
+    if (hrs > 0) {
+      return `${hrs}:${padM}:${padS}`
+    }
+    return `${padM}:${padS}`
   }
 
   const handleSeekTo = (timestampSecs: number, noteId?: string) => {
@@ -74,7 +80,7 @@ export default function VideosPreview({ initialTimestampSecs }: VideosPreviewPro
       timestampSecs: currentSeconds,
       timestampLabel: formatDuration(currentSeconds),
       content: newNoteContent.trim(),
-      videoTitle: 'Data Structures & Algorithms — Lecture 14',
+      videoTitle: 'Data Structures & Algorithms: Lecture 14',
       channelName: 'CS Algorithms Hub',
       createdAt: 'Just now',
     }

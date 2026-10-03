@@ -1,5 +1,6 @@
 'use client'
 
+import { Flame, Coffee, Sparkles, Clock, CheckCircle2, AlertCircle, Ban } from 'lucide-react'
 import type { PomodoroSession, SessionType, SessionStatus } from '@/lib/data/pomodoro'
 import { isSameLocalDay, formatStudyDuration } from '@/lib/analytics/utils'
 
@@ -8,36 +9,45 @@ interface SessionHistoryProps {
   timezone?: string
 }
 
-const typeStyles: Record<SessionType, { label: string; badge: string; iconBg: string }> = {
+const typeStyles: Record<
+  SessionType,
+  { label: string; badge: string; icon: React.ComponentType<{ className?: string }> }
+> = {
   focus: {
     label: 'Focus',
-    badge: 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-    iconBg: 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400',
+    badge: 'bg-[var(--accent-subtle)] text-[var(--accent)] border-[var(--border-subtle)]',
+    icon: Flame,
   },
   short_break: {
     label: 'Short Break',
-    badge: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
-    iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400',
+    badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+    icon: Coffee,
   },
   long_break: {
     label: 'Long Break',
-    badge: 'bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800',
-    iconBg: 'bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400',
+    badge: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+    icon: Sparkles,
   },
 }
 
-const statusStyles: Record<SessionStatus, { label: string; badge: string }> = {
+const statusStyles: Record<
+  SessionStatus,
+  { label: string; badge: string; icon: React.ComponentType<{ className?: string }> }
+> = {
   completed: {
     label: 'Completed',
-    badge: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+    badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+    icon: CheckCircle2,
   },
   cancelled: {
     label: 'Cancelled',
-    badge: 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+    badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    icon: Ban,
   },
   interrupted: {
     label: 'Interrupted',
-    badge: 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+    badge: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+    icon: AlertCircle,
   },
 }
 
@@ -89,34 +99,33 @@ export default function SessionHistory({ sessions, timezone }: SessionHistoryPro
     }
   }
 
-
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs overflow-hidden transition-colors">
+    <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] shadow-xs overflow-hidden transition-colors">
       {/* Card Header & Today's Summary */}
-      <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="p-5 border-b border-[var(--border-subtle)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-base font-bold text-gray-900 dark:text-gray-100">Today&apos;s Sessions</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Log of focus and break intervals completed today
+          <h2 className="text-base font-bold text-[var(--foreground)]">Today&apos;s Focus Activity</h2>
+          <p className="text-xs text-[var(--foreground-muted)] mt-0.5">
+            Log of focus and rest intervals completed today
           </p>
         </div>
 
         {/* Quick Stats */}
-        <div className="flex items-center gap-3">
-          <div className="bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 rounded-xl px-3 py-1.5 text-center">
-            <span className="block text-[11px] font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-              Focus Time
+        <div className="flex items-center gap-2.5">
+          <div className="bg-[var(--surface-muted)] border border-[var(--border-subtle)] rounded-xl px-3 py-1.5 text-center">
+            <span className="block text-[10px] font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">
+              Total Focus
             </span>
-            <span className="text-sm font-bold text-indigo-900 dark:text-indigo-200">
+            <span className="text-sm font-bold text-[var(--foreground)]">
               {formatTotalTime(totalFocusSecondsToday)}
             </span>
           </div>
 
-          <div className="bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 rounded-xl px-3 py-1.5 text-center">
-            <span className="block text-[11px] font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-              Focus Done
+          <div className="bg-[var(--accent-subtle)] border border-[var(--border-subtle)] rounded-xl px-3 py-1.5 text-center">
+            <span className="block text-[10px] font-semibold text-[var(--accent)] uppercase tracking-wider">
+              Sessions Done
             </span>
-            <span className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
+            <span className="text-sm font-bold text-[var(--accent)]">
               {completedFocusSessionsCount}
             </span>
           </div>
@@ -125,67 +134,45 @@ export default function SessionHistory({ sessions, timezone }: SessionHistoryPro
 
       {/* Session List */}
       {todaySessions.length === 0 ? (
-        <div className="p-10 text-center">
-          <div className="mx-auto w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 mb-3">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+        <div className="p-10 text-center space-y-2">
+          <div className="mx-auto w-10 h-10 rounded-xl bg-[var(--surface-muted)] flex items-center justify-center text-[var(--foreground-muted)] border border-[var(--border-subtle)]">
+            <Clock className="w-5 h-5" />
           </div>
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">No sessions recorded today</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 max-w-xs mx-auto">
+          <p className="text-sm font-medium text-[var(--foreground)]">No sessions recorded today</p>
+          <p className="text-xs text-[var(--foreground-muted)] max-w-xs mx-auto">
             Start the timer above to log your first study session of the day.
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-100 dark:divide-gray-800 max-h-96 overflow-y-auto">
+        <div className="divide-y divide-[var(--border-subtle)] max-h-96 overflow-y-auto">
           {todaySessions.map((session) => {
             const typeConfig = typeStyles[session.session_type] || typeStyles.focus
             const statusConfig = statusStyles[session.status] || statusStyles.completed
+            const TypeIcon = typeConfig.icon
+            const StatusIcon = statusConfig.icon
 
             return (
               <div
                 key={session.id}
-                className="p-4 flex items-center justify-between hover:bg-gray-50/70 dark:hover:bg-gray-800/50 transition-colors"
+                className="p-4 flex items-center justify-between hover:bg-[var(--surface-muted)]/50 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${typeConfig.iconBg}`}
-                  >
-                    {session.session_type === 'focus' ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                        />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                        />
-                      </svg>
-                    )}
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-[var(--surface-muted)] border border-[var(--border-subtle)] text-[var(--accent)]">
+                    <TypeIcon className="w-4 h-4" />
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate">
+                      <span className="text-xs font-bold text-[var(--foreground)] truncate">
                         {typeConfig.label}
                       </span>
                       <span
-                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${typeConfig.badge}`}
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${typeConfig.badge}`}
                       >
                         {formatDuration(session)}
                       </span>
                     </div>
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 block">
+                    <span className="text-[11px] text-[var(--foreground-muted)] mt-0.5 block">
                       Started at {formatTime(session.started_at)}
                     </span>
                   </div>
@@ -193,9 +180,10 @@ export default function SessionHistory({ sessions, timezone }: SessionHistoryPro
 
                 <div className="shrink-0">
                   <span
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${statusConfig.badge}`}
+                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-xl border flex items-center gap-1 ${statusConfig.badge}`}
                   >
-                    {statusConfig.label}
+                    <StatusIcon className="w-3 h-3" />
+                    <span>{statusConfig.label}</span>
                   </span>
                 </div>
               </div>
@@ -206,4 +194,3 @@ export default function SessionHistory({ sessions, timezone }: SessionHistoryPro
     </div>
   )
 }
-

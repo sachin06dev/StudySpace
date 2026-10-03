@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getCachedUser } from '@/lib/data/cachedUser'
 import { getTasks } from '@/lib/data/tasks'
 import PageHeader from '@/components/shared/PageHeader'
 import TaskForm from '@/components/tasks/TaskForm'
@@ -24,10 +24,7 @@ async function TasksContent({ userId }: { userId: string }) {
 }
 
 export default async function TasksPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCachedUser()
 
   if (!user) {
     redirect('/login')

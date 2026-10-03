@@ -32,7 +32,7 @@ export default function AnalyticsPreview() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
         <div className="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-gray-800/90 border border-gray-200/80 dark:border-gray-700/80 shadow-2xs min-w-0">
           <span className="text-[9px] sm:text-[10px] text-gray-500 font-medium block truncate">Total Time</span>
-          <span className="text-xs sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 block mt-0.5 truncate">
+          <span className="text-xs sm:text-base font-extrabold text-violet-600 dark:text-violet-400 block mt-0.5 truncate">
             {PREVIEW_ANALYTICS.summary.totalStudyTime}
           </span>
           <span className="text-[8px] sm:text-[9px] text-emerald-600 font-semibold mt-0.5 block truncate">
@@ -74,7 +74,7 @@ export default function AnalyticsPreview() {
               <span className="font-bold text-gray-900 dark:text-gray-100 text-[10px] sm:text-xs truncate">
                 Weekly Study Time
               </span>
-              <span className="text-[9px] sm:text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 truncate ml-2">
+              <span className="text-[9px] sm:text-[10px] font-semibold text-violet-600 dark:text-violet-400 truncate ml-2">
                 {activeDayData ? `${activeDayData.fullDay}: ${activeDayData.label}` : 'Hover bars to inspect'}
               </span>
             </div>
@@ -105,8 +105,8 @@ export default function AnalyticsPreview() {
                       <div
                         className={`w-full rounded-t-md transition-all duration-300 ${
                           isHovered
-                            ? 'bg-indigo-600'
-                            : 'bg-gradient-to-t from-indigo-500 to-indigo-400 group-hover:from-indigo-600 group-hover:to-indigo-500'
+                            ? 'bg-violet-600'
+                            : 'bg-gradient-to-t from-violet-500 to-purple-400 group-hover:from-violet-600 group-hover:to-purple-500'
                         }`}
                         style={{ height: `${heightPercent}%` }}
                       />
@@ -116,7 +116,7 @@ export default function AnalyticsPreview() {
                     <span
                       className={`text-[9px] sm:text-[10px] font-semibold ${
                         isHovered
-                          ? 'text-indigo-600 dark:text-indigo-400'
+                          ? 'text-violet-600 dark:text-violet-400'
                           : 'text-gray-500 dark:text-gray-400'
                       }`}
                     >
@@ -130,7 +130,7 @@ export default function AnalyticsPreview() {
 
           <div className="pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between text-[9px] sm:text-[10px] text-gray-400">
             <span>Goal: 20 hrs/wk</span>
-            <span className="font-semibold text-indigo-600 dark:text-indigo-400">92% Met</span>
+            <span className="font-semibold text-violet-600 dark:text-violet-400">92% Met</span>
           </div>
         </div>
 

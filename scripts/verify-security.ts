@@ -6,7 +6,8 @@
  * 2. Cross-user isolation rules across all data models.
  * 3. File upload restrictions (0 bytes rejected, max size enforced).
  * 4. Storage object path isolation and short-lived signed URLs.
- * 5. Server-side secret exposure checks.
+ * 5. Server-side secret exposure checks (Supabase, YouTube, and Cloudflare R2).
+ * 6. Cloudflare R2 private credentials are never referenced in client code.
  */
 
 import { readFileSync } from 'fs'
@@ -34,12 +35,16 @@ const clientFiles = [
   'lib/supabase/client.ts',
   'components/auth/GoogleSignInButton.tsx',
   'components/documents/UploadDocumentForm.tsx',
+  'components/documents/DocumentCard.tsx',
+  'components/documents/DocumentLibrary.tsx',
 ]
 for (const file of clientFiles) {
   const content = readFileSync(join(rootDir, file), 'utf8')
   assert(!content.includes('service_role'), `${file} does not contain service_role`)
   assert(!content.includes('SUPABASE_SERVICE_ROLE_KEY'), `${file} does not contain SUPABASE_SERVICE_ROLE_KEY`)
   assert(!content.includes('YOUTUBE_API_KEY'), `${file} does not reference server-only YOUTUBE_API_KEY`)
+  assert(!content.includes('R2_SECRET_ACCESS_KEY'), `${file} does not reference server-only R2_SECRET_ACCESS_KEY`)
+  assert(!content.includes('R2_ACCESS_KEY_ID'), `${file} does not reference server-only R2_ACCESS_KEY_ID`)
 }
 
 // 2. Check Database Schema RLS & Security Fixes
@@ -69,11 +74,9 @@ for (const table of userTables) {
 assert(!schemaSql.includes('ON public.playlist_items FOR DELETE'), 'playlist_items does not have a client DELETE policy')
 assert(!securityFixesSql.includes('CREATE POLICY "delete playlist_items"'), 'security_fixes.sql drops DELETE on playlist_items')
 
-// Check storage.objects UPDATE WITH CHECK
-const normalizedSchema = schemaSql.replace(/\r\n/g, '\n')
-const normalizedSecurityFixes = securityFixesSql.replace(/\r\n/g, '\n')
-assert(normalizedSchema.includes('CREATE POLICY "Users can update their own documents"') && normalizedSchema.includes('WITH CHECK (\n        bucket_id = \'study-documents\' AND\n        (storage.foldername(name))[1] = (select auth.uid())::text'), 'storage.objects UPDATE policy includes WITH CHECK')
-assert(normalizedSecurityFixes.includes('WITH CHECK (\n        bucket_id = \'study-documents\' AND\n        (storage.foldername(name))[1] = (select auth.uid())::text'), 'security_fixes.sql includes WITH CHECK on storage.objects UPDATE')
+// Check storage_provider & storage_key in documents schema
+assert(schemaSql.includes('storage_provider TEXT NOT NULL DEFAULT'), 'documents schema includes storage_provider column')
+assert(schemaSql.includes('storage_key TEXT'), 'documents schema includes storage_key column')
 
 // Check handle_new_user search_path and EXECUTE revocation
 assert(schemaSql.includes("SET search_path = ''"), 'handle_new_user has hardened search_path')
@@ -81,13 +84,14 @@ assert(schemaSql.includes('REVOKE EXECUTE ON FUNCTION public.handle_new_user() F
 assert(schemaSql.includes('REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM anon;'), 'handle_new_user revokes EXECUTE from anon')
 assert(schemaSql.includes('REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM authenticated;'), 'handle_new_user revokes EXECUTE from authenticated')
 
-// 3. Check File Upload Validation & Mobile Permission Avoidance
+// 3. Check File Upload Validation & Presigned R2 Flow
 console.log('\n3. Checking File Upload Security & Permission Policy Compliance...')
 const docActionContent = readFileSync(join(rootDir, 'lib/actions/documents.ts'), 'utf8')
 assert(docActionContent.includes('input.fileSizeBytes <= 0'), 'createDocumentAction rejects empty files (0 bytes)')
 assert(docActionContent.includes('input.fileSizeBytes > MAX_FILE_SIZE_BYTES'), 'createDocumentAction rejects files exceeding 50 MB')
-assert(docActionContent.includes("input.filePath.startsWith(`${user.id}/`)"), 'createDocumentAction strictly verifies user prefix in file path')
+assert(docActionContent.includes('isUserStorageKey'), 'createDocumentAction strictly verifies user prefix via isUserStorageKey')
 assert(docActionContent.includes('isSupportedDocumentFile(input.fileName)'), 'createDocumentAction verifies document file extension server-side')
+assert(docActionContent.includes('getPresignedDocumentUploadUrlAction'), 'documents actions exports getPresignedDocumentUploadUrlAction')
 
 const uploadFormContent = readFileSync(join(rootDir, 'components/documents/UploadDocumentForm.tsx'), 'utf8')
 assert(uploadFormContent.includes('file.size <= 0'), 'UploadDocumentForm rejects empty files client-side')

@@ -2,14 +2,14 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'StudySpace — Student Productivity & Study Workspace',
-    short_name: 'StudySpace',
+    name: 'StudySpace 4U: Student Productivity & Academic Workspace',
+    short_name: 'StudySpace 4U',
     description:
-      'A unified productivity workspace for students and lifelong learners: lecture viewing, timestamped notes, Pomodoro timer, task management, website bookmarks, private documents, and analytics.',
+      'A unified academic workspace for students and lifelong learners: attendance tracking, bunk calculator, AI timetable scanning, lecture viewing, timestamped notes, Pomodoro timer, tasks, and private documents.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#090d16',
-    theme_color: '#4f46e5',
+    background_color: '#0d0d0f',
+    theme_color: '#7c3aed',
     icons: [
       {
         src: '/icon-192.png',

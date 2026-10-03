@@ -30,12 +30,12 @@ export default function InteractiveProductPreview() {
     <div className="relative w-full max-w-2xl mx-auto lg:max-w-none group">
       {/* Background glow layers */}
       <div
-        className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+        className="absolute -inset-1 bg-gradient-to-r from-violet-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 -z-10"
         aria-hidden="true"
       />
 
       {/* Main Mockup Window Container */}
-      <div className="relative rounded-2xl border border-gray-200/90 dark:border-gray-800/90 bg-white dark:bg-[#0c111e] shadow-2xl overflow-hidden transition-all duration-300">
+      <div className="relative rounded-2xl border border-gray-200/90 dark:border-(--border-subtle) bg-white dark:bg-(--surface) shadow-2xl overflow-hidden transition-all duration-300">
         {/* Browser Top Bar */}
         <PreviewTopBar
           activeSection={activeSection}
@@ -53,7 +53,7 @@ export default function InteractiveProductPreview() {
                 onClick={() => handleNavigate(item.id)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-2xs'
+                    ? 'bg-violet-600 text-white shadow-2xs'
                     : 'bg-white/80 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border border-gray-200/60 dark:border-gray-700/60'
                 }`}
               >

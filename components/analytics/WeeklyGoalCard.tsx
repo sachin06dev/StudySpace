@@ -45,9 +45,9 @@ export default function WeeklyGoalCard({ data }: WeeklyGoalCardProps) {
   }
 
   return (
-    <div id="weekly-goal" className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col h-full space-y-4">
+    <div id="weekly-goal" className="bg-white dark:bg-(--surface) border border-slate-200/80 dark:border-(--border-subtle) rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col h-full space-y-4">
       {/* Header with Edit Button */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/80">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-(--border-subtle)">
         <div className="flex items-center gap-2">
           <span className="text-lg">🎯</span>
           <div>
@@ -69,7 +69,7 @@ export default function WeeklyGoalCard({ data }: WeeklyGoalCardProps) {
                 setError(null)
                 setIsEditing(true)
               }}
-              className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+              className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-(--surface-raised) hover:bg-slate-200 dark:hover:bg-(--surface-raised)/80 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
             >
               Edit
             </button>
@@ -81,7 +81,7 @@ export default function WeeklyGoalCard({ data }: WeeklyGoalCardProps) {
               <span>Achieved</span>
             </span>
           ) : (
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400">
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-800/60 text-purple-600 dark:text-purple-400">
               {progressPercent}%
             </span>
           )}
@@ -90,7 +90,7 @@ export default function WeeklyGoalCard({ data }: WeeklyGoalCardProps) {
 
       {/* Inline Goal Editor Modal / Form */}
       {isEditing ? (
-        <form onSubmit={handleSave} className="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 space-y-3 animate-in fade-in duration-150">
+        <form onSubmit={handleSave} className="bg-slate-50 dark:bg-(--surface-raised)/50 p-3.5 rounded-2xl border border-slate-200/60 dark:border-(--border-subtle) space-y-3 animate-in fade-in duration-150">
           <div>
             <label htmlFor="goal-hours" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Set Weekly Study Target (Hours)
@@ -106,7 +106,7 @@ export default function WeeklyGoalCard({ data }: WeeklyGoalCardProps) {
                 onChange={(e) => setGoalHoursInput(e.target.value)}
                 disabled={isPending}
                 required
-                className="w-24 text-sm font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                className="w-24 text-sm font-bold text-slate-900 dark:text-white bg-white dark:bg-(--surface) border border-slate-300 dark:border-(--border-subtle) rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-purple-500 focus:outline-hidden"
               />
               <span className="text-xs text-slate-500 dark:text-slate-400">hours / week</span>
             </div>
@@ -125,7 +125,7 @@ export default function WeeklyGoalCard({ data }: WeeklyGoalCardProps) {
             <button
               type="submit"
               disabled={isPending}
-              className="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-xl transition-colors cursor-pointer shadow-xs"
+              className="px-4 py-1.5 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 rounded-xl transition-colors cursor-pointer shadow-xs"
             >
               {isPending ? 'Saving...' : 'Save Goal'}
             </button>
@@ -154,13 +154,13 @@ export default function WeeklyGoalCard({ data }: WeeklyGoalCardProps) {
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-700/60">
+          <div className="w-full bg-slate-100 dark:bg-(--surface-raised) h-3 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-(--border-subtle)">
             <div
               style={{ width: `${progressPercent}%` }}
-              className={`h-full rounded-full transition-all duration-700 ${
+              className={`h-full rounded-full transition-all duration-[var(--duration-very-slow)] [transition-timing-function:var(--ease-smooth-out)] ${
                 isAchieved
                   ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                  : 'bg-gradient-to-r from-indigo-500 to-indigo-600'
+                  : 'bg-gradient-to-r from-purple-600 to-indigo-600'
               }`}
             />
           </div>

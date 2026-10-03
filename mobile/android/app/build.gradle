@@ -1,0 +1,117 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
+if (flutterVersionCode == null) {
+    flutterVersionCode = "1"
+}
+
+def flutterVersionName = localProperties.getProperty("flutter.versionName")
+if (flutterVersionName == null) {
+    flutterVersionName = "1.0"
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+def envStoreFile = System.getenv("STUDYSPACE_KEYSTORE_PATH")
+def envStorePassword = System.getenv("STUDYSPACE_KEYSTORE_PASSWORD")
+def envKeyAlias = System.getenv("STUDYSPACE_KEY_ALIAS")
+def envKeyPassword = System.getenv("STUDYSPACE_KEY_PASSWORD")
+
+def hasKeystoreFile = keystorePropertiesFile.exists()
+def hasEnvSigning = (envStoreFile != null && envStorePassword != null && envKeyAlias != null && envKeyPassword != null)
+def isReleaseSigningConfigured = hasKeystoreFile || hasEnvSigning
+
+android {
+    namespace "com.studyspace.app"
+    compileSdk 36
+    ndkVersion = "28.2.13676358"
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+    }
+
+    defaultConfig {
+        applicationId "com.studyspace.app"
+        minSdk 24
+        targetSdk 36
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        multiDexEnabled true
+    }
+
+    signingConfigs {
+        release {
+            if (hasKeystoreFile) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                def storeFilePath = keystoreProperties['storeFile']
+                def resolvedStoreFile = file(storeFilePath)
+                if (!resolvedStoreFile.exists()) {
+                    resolvedStoreFile = rootProject.file(storeFilePath)
+                }
+                storeFile resolvedStoreFile
+                storePassword keystoreProperties['storePassword']
+            } else if (hasEnvSigning) {
+                keyAlias envKeyAlias
+                keyPassword envKeyPassword
+                storeFile file(envStoreFile)
+                storePassword envStorePassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            if (isReleaseSigningConfigured) {
+                signingConfig signingConfigs.release
+            } else {
+                throw new IllegalStateException(
+                    "CRITICAL: StudySpace release signing configuration not found! " +
+                    "To prevent silent fallback to an incompatible signing key, release builds require " +
+                    "either a valid key.properties in the mobile/android directory or STUDYSPACE_* signing environment variables."
+                )
+            }
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+}
+
+flutter {
+    source "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+}
+
+tasks.matching { it.name.contains("AarMetadata") }.configureEach {
+    enabled = false
+}

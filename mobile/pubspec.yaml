@@ -1,0 +1,57 @@
+name: studyspace
+description: "StudySpace Android mobile application - Attendance-First + Academic Ecosystem"
+publish_to: 'none'
+version: 1.1.6+14
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Supabase Client & Auth
+  supabase_flutter: ^2.8.0
+
+  # State Management
+  provider: ^6.1.2
+
+  # Local Persistence & SQLite Cache
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  path_provider: ^2.1.5
+  shared_preferences: ^2.3.2
+  flutter_secure_storage: ^9.2.2
+
+  # Network & Sync
+  connectivity_plus: ^6.1.0
+  http: ^1.2.2
+  http_parser: ^4.1.2
+
+  # Local Notifications & Timezone
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+
+  # Media, Audio & Playback
+  image_picker: ^1.1.2
+  file_picker: ^8.1.7
+  youtube_player_iframe: ^6.0.2
+  url_launcher: ^6.3.2
+  audioplayers: ^6.1.2
+
+  # Utilities
+  intl: ^0.19.0
+  uuid: ^4.5.1
+  crypto: ^3.0.6
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/branding/
+    - assets/sounds/

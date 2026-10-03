@@ -94,20 +94,20 @@ export default function VideoCard({
 
   return (
     <div
-      className={`group relative bg-white dark:bg-gray-900 rounded-xl border transition-all flex flex-col overflow-hidden ${
+      className={`group relative rounded-xl border transition-all flex flex-col overflow-hidden bg-[var(--surface)] text-[var(--text-primary)] ${
         isCompleted
-          ? 'border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/10 dark:bg-emerald-950/20 hover:border-emerald-300'
-          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 shadow-xs hover:shadow-md'
+          ? 'border-[var(--success-border)] bg-[var(--surface)] hover:border-[var(--success)] shadow-xs'
+          : 'border-[var(--border-subtle)] hover:border-[var(--accent)] hover:shadow-md'
       } ${isPending ? 'opacity-60 pointer-events-none' : ''}`}
     >
       {/* Error Banner */}
       {error && (
-        <div className="p-2 bg-red-50 dark:bg-red-950/50 border-b border-red-100 dark:border-red-900 text-[11px] text-red-600 dark:text-red-400 flex justify-between items-center">
-          <span>{error}</span>
+        <div className="p-2.5 bg-[var(--danger-muted)] border-b border-[var(--danger-border)] text-xs text-[var(--danger)] flex justify-between items-center">
+          <span className="font-medium">{error}</span>
           <button
             type="button"
             onClick={() => setError(null)}
-            className="text-red-500 hover:text-red-700 font-semibold cursor-pointer"
+            className="text-[var(--danger)] hover:opacity-80 font-bold cursor-pointer px-1"
           >
             ✕
           </button>
@@ -117,7 +117,7 @@ export default function VideoCard({
       {/* Thumbnail Area with Link */}
       <Link
         href={videoHref}
-        className="relative aspect-video w-full bg-gray-900 overflow-hidden block"
+        className="relative aspect-video w-full bg-[var(--surface-raised)] overflow-hidden block"
       >
         {video.thumbnail_url ? (
           <Image
@@ -125,21 +125,21 @@ export default function VideoCard({
             alt={video.title}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className="object-cover group-hover:scale-105 transition-transform duration-[var(--duration-fast)] [transition-timing-function:var(--ease-smooth-out)]"
             priority={priority}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-400 text-xs">
+          <div className="w-full h-full flex items-center justify-center bg-[var(--surface-raised)] text-[var(--text-muted)] text-xs">
             No Thumbnail
           </div>
         )}
 
-        {/* Dark gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+        {/* Calm gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
         {/* Play Icon on hover */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="w-11 h-11 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+          <div className="w-11 h-11 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
             <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
@@ -148,17 +148,17 @@ export default function VideoCard({
 
         {/* Duration Badge */}
         {(video.duration_seconds || 0) > 0 && (
-          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-white text-[11px] font-medium tracking-wide">
+          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-white text-[11px] font-mono tracking-tight shadow-xs">
             {durationText}
           </div>
         )}
 
         {/* Progress Bar under thumbnail */}
         {progressPercent > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gray-900/60">
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40 backdrop-blur-xs">
             <div
-              className={`h-full transition-all duration-300 ${
-                isCompleted ? 'bg-emerald-500' : 'bg-red-600'
+              className={`h-full transition-all duration-[var(--duration-slow)] [transition-timing-function:var(--ease-smooth-out)] ${
+                isCompleted ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'
               }`}
               style={{ width: `${progressPercent}%` }}
             />
@@ -172,29 +172,29 @@ export default function VideoCard({
           {/* Status & Date */}
           <div className="flex items-center justify-between gap-2 mb-2">
             {isCompleted ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-[var(--success-muted)] text-[var(--success)] border-[var(--success-border)]">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
                 <span>Completed</span>
               </span>
             ) : savedVideo.status === 'in_progress' ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-[var(--warning-muted)] text-[var(--warning)] border-[var(--warning-border)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--warning)] animate-pulse" />
                 <span>In Progress {progressPercent > 0 ? `· ${progressPercent}%` : ''}</span>
               </span>
             ) : savedVideo.status === 'not_started' ? (
-              <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full border bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700">
+              <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full border bg-[var(--surface-raised)] text-[var(--text-muted)] border-[var(--border-subtle)]">
                 Not Started
               </span>
             ) : (
-              <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full border bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+              <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full border bg-[var(--accent-muted)] text-[var(--accent)] border-[var(--accent-hover)]/30">
                 Saved
               </span>
             )}
 
             {savedVideo.saved_at && (
-              <span className="text-[11px] text-gray-400 dark:text-gray-500">
+              <span className="text-[11px] text-[var(--text-muted)] font-mono">
                 {new Date(savedVideo.saved_at).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
@@ -206,12 +206,12 @@ export default function VideoCard({
           {/* Title */}
           <Link
             href={videoHref}
-            className="block group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors"
+            className="block group-hover:text-[var(--accent)] transition-colors"
             title={video.title}
           >
             <h3
               className={`text-sm font-semibold line-clamp-2 leading-snug ${
-                isCompleted ? 'text-gray-700 dark:text-gray-300' : 'text-gray-900 dark:text-gray-100'
+                isCompleted ? 'text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'
               }`}
             >
               {video.title}
@@ -220,8 +220,8 @@ export default function VideoCard({
 
           {/* Channel Name */}
           {video.channel_name && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-1">
-              <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <p className="text-xs text-[var(--text-muted)] mt-1.5 flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span className="truncate">{video.channel_name}</span>
@@ -230,11 +230,11 @@ export default function VideoCard({
         </div>
 
         {/* Footer Actions */}
-        <div className="pt-3 mt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-          {/* Watch Link */}
+        <div className="pt-3 mt-3 border-t border-[var(--border-subtle)] flex items-center justify-between gap-2">
+          {/* Watch / Resume Link */}
           <Link
             href={videoHref}
-            className="text-xs font-semibold text-red-600 hover:text-red-700 flex items-center gap-1"
+            className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-hover)] flex items-center gap-1 transition-colors"
           >
             <span>{savedVideo.watch_progress_seconds > 0 && !isCompleted ? 'Resume' : 'Watch'}</span>
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -253,8 +253,8 @@ export default function VideoCard({
               aria-label={isCompleted ? 'Mark as unwatched' : 'Mark as watched'}
               className={`min-w-[36px] min-h-[36px] flex items-center justify-center p-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 isCompleted
-                  ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
-                  : 'text-gray-400 hover:text-emerald-600 hover:bg-gray-100'
+                  ? 'text-[var(--success)] bg-[var(--success-muted)] hover:opacity-90 border border-[var(--success-border)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--success)] hover:bg-[var(--surface-raised)]'
               }`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -264,13 +264,13 @@ export default function VideoCard({
 
             {/* Delete Button / Confirmation */}
             {isConfirmingDelete ? (
-              <div className="flex items-center gap-1.5 bg-red-50 dark:bg-red-950/60 p-1 rounded-lg border border-red-200 dark:border-red-800">
-                <span className="text-[10px] font-medium text-red-700 dark:text-red-300 px-1">Remove?</span>
+              <div className="flex items-center gap-1.5 bg-[var(--danger-muted)] p-1 rounded-lg border border-[var(--danger-border)]">
+                <span className="text-[10px] font-medium text-[var(--danger)] px-1">Remove?</span>
                 <button
                   type="button"
                   onClick={handleDelete}
                   disabled={isPending}
-                  className="text-[11px] bg-red-600 hover:bg-red-700 text-white font-semibold px-2.5 py-1 rounded transition-colors cursor-pointer min-h-[30px]"
+                  className="text-[11px] bg-[var(--danger)] hover:opacity-90 text-white font-semibold px-2.5 py-1 rounded transition-colors cursor-pointer min-h-[30px]"
                 >
                   Yes
                 </button>
@@ -278,7 +278,7 @@ export default function VideoCard({
                   type="button"
                   onClick={() => setIsConfirmingDelete(false)}
                   disabled={isPending}
-                  className="text-[11px] bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium px-2.5 py-1 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer min-h-[30px]"
+                  className="text-[11px] bg-[var(--surface)] text-[var(--text-primary)] font-medium px-2.5 py-1 rounded border border-[var(--border-subtle)] hover:bg-[var(--surface-raised)] transition-colors cursor-pointer min-h-[30px]"
                 >
                   No
                 </button>
@@ -290,7 +290,7 @@ export default function VideoCard({
                 disabled={isPending}
                 aria-label="Remove video"
                 title="Remove from library"
-                className="min-w-[36px] min-h-[36px] flex items-center justify-center p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
+                className="min-w-[36px] min-h-[36px] flex items-center justify-center p-2 text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger-muted)] rounded-lg transition-colors cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path

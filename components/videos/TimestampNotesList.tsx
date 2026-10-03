@@ -96,8 +96,8 @@ export default function TimestampNotesList({
 
   if (notes.length === 0) {
     return (
-      <div className="text-center py-8 px-4 rounded-xl border border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/40">
-        <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+      <div className="text-center py-8 px-4 rounded-xl border border-dashed border-[var(--border-subtle)] bg-[var(--surface-raised)]/50">
+        <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-[var(--accent-muted)] border border-[var(--accent)]/30 flex items-center justify-center text-[var(--accent)]">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
@@ -107,8 +107,8 @@ export default function TimestampNotesList({
             />
           </svg>
         </div>
-        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">No notes yet</p>
-        <p className="text-[11px] text-gray-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">
+        <p className="text-xs font-semibold text-[var(--text-primary)] mb-1">No notes yet</p>
+        <p className="text-[11px] text-[var(--text-muted)] max-w-xs mx-auto leading-relaxed">
           Add your first note while watching to pin key concepts and moments to exact timestamps.
         </p>
       </div>
@@ -116,7 +116,7 @@ export default function TimestampNotesList({
   }
 
   return (
-    <div className="space-y-2.5 max-h-[480px] overflow-y-auto pr-1">
+    <div className="space-y-2.5 max-h-[480px] overflow-y-auto pr-1 scrollbar-thin">
       {notes.map((note) => {
         const isEditing = editingId === note.id
         const isDeleting = deletingId === note.id
@@ -129,17 +129,17 @@ export default function TimestampNotesList({
             key={note.id}
             className={`group relative rounded-xl border p-3 transition-all ${
               isCurrentlyNear
-                ? 'bg-indigo-50/50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800 shadow-2xs'
-                : 'bg-white dark:bg-gray-800/80 border-gray-200 dark:border-gray-700/80 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-2xs'
+                ? 'bg-[var(--accent-muted)] border-[var(--accent)] shadow-xs'
+                : 'bg-[var(--surface)] border-[var(--border-subtle)] hover:border-[var(--accent)]/50 hover:shadow-2xs'
             }`}
           >
             {isEditing ? (
               /* Inline Edit Mode */
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-mono text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--accent-muted)] text-[var(--accent)] font-mono text-xs font-semibold border border-[var(--accent)]/30">
                     <svg
-                      className="w-3 h-3 text-indigo-600 dark:text-indigo-400"
+                      className="w-3 h-3 text-[var(--accent)]"
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
@@ -147,7 +147,7 @@ export default function TimestampNotesList({
                     </svg>
                     <span>{formatDuration(note.timestamp_seconds)}</span>
                   </span>
-                  <span className="text-[11px] text-gray-400 dark:text-gray-500">Editing note</span>
+                  <span className="text-[11px] text-[var(--text-muted)]">Editing note</span>
                 </div>
 
                 <textarea
@@ -157,23 +157,23 @@ export default function TimestampNotesList({
                   onKeyDown={(e) => handleEditKeyDown(e, note.id)}
                   rows={2}
                   disabled={isPending}
-                  className="w-full text-xs text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 border border-indigo-200 dark:border-indigo-800 rounded-lg p-2 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                  className="w-full text-xs text-[var(--text-primary)] bg-[var(--surface-raised)] border border-[var(--accent)] rounded-lg p-2 focus:outline-hidden focus:ring-1 focus:ring-[var(--accent)] resize-none"
                 />
 
                 {editError && (
-                  <p className="text-[11px] text-red-600 dark:text-red-400 font-medium bg-red-50 dark:bg-red-950/40 p-1 rounded border border-red-100 dark:border-red-900">
+                  <p className="text-[11px] text-[var(--danger)] font-medium bg-[var(--danger-muted)] p-1 rounded border border-[var(--danger-border)]">
                     {editError}
                   </p>
                 )}
 
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500">Ctrl+Enter to save • Ctrl+Z to cancel</span>
+                  <span className="text-[10px] text-[var(--text-muted)]">Ctrl+Enter save • Esc cancel</span>
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={handleCancelEdit}
                       disabled={isPending}
-                      className="px-2 py-1 text-[11px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-md transition-colors cursor-pointer"
+                      className="px-2 py-1 text-[11px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface)] hover:bg-[var(--surface-raised)] border border-[var(--border-subtle)] rounded-md transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -181,7 +181,7 @@ export default function TimestampNotesList({
                       type="button"
                       onClick={() => handleSaveEdit(note.id)}
                       disabled={isPending || !editContent.trim()}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-md transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 rounded-md transition-colors cursor-pointer"
                     >
                       {isPending ? 'Saving...' : 'Save'}
                     </button>
@@ -196,11 +196,11 @@ export default function TimestampNotesList({
                   <button
                     type="button"
                     onClick={() => onSeek(note.timestamp_seconds)}
-                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 hover:text-indigo-900 dark:hover:text-indigo-100 border border-indigo-200/70 dark:border-indigo-800 font-mono text-xs font-semibold transition-colors group/btn cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[var(--accent-muted)] hover:bg-[var(--accent)] text-[var(--accent)] hover:text-white border border-[var(--accent)]/30 font-mono text-xs font-semibold transition-all group/btn cursor-pointer"
                     title={`Jump to ${formatDuration(note.timestamp_seconds)}`}
                   >
                     <svg
-                      className="w-3 h-3 text-indigo-500 group-hover/btn:text-indigo-700"
+                      className="w-3 h-3 text-[var(--accent)] group-hover/btn:text-white transition-colors"
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
@@ -215,7 +215,7 @@ export default function TimestampNotesList({
                       type="button"
                       onClick={() => handleStartEdit(note)}
                       disabled={isDeleting}
-                      className="min-w-[32px] min-h-[32px] flex items-center justify-center p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
+                      className="min-w-[30px] min-h-[30px] flex items-center justify-center p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-raised)] rounded-lg transition-colors cursor-pointer"
                       title="Edit note"
                     >
                       <svg
@@ -236,11 +236,11 @@ export default function TimestampNotesList({
                       type="button"
                       onClick={() => handleDelete(note.id)}
                       disabled={isDeleting}
-                      className="min-w-[32px] min-h-[32px] flex items-center justify-center p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors cursor-pointer"
+                      className="min-w-[30px] min-h-[30px] flex items-center justify-center p-1 text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger-muted)] rounded-lg transition-colors cursor-pointer"
                       title="Delete note"
                     >
                       {isDeleting ? (
-                        <span className="w-3.5 h-3.5 border border-red-500 border-t-transparent rounded-full animate-spin inline-block" />
+                        <span className="w-3.5 h-3.5 border border-[var(--danger)] border-t-transparent rounded-full animate-spin inline-block" />
                       ) : (
                         <svg
                           className="w-3.5 h-3.5"
@@ -260,7 +260,7 @@ export default function TimestampNotesList({
                   </div>
                 </div>
 
-                <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
+                <p className="text-xs text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap break-words">
                   {note.content}
                 </p>
               </div>

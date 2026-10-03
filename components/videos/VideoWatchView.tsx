@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Maximize2, Minimize2, PanelLeftOpen } from 'lucide-react'
 import VideoPlayer, { type VideoPlayerRef } from '@/components/videos/VideoPlayer'
 import VideoDetailHeader from '@/components/videos/VideoDetailHeader'
 import AddNoteButton, { type AddNoteButtonRef } from '@/components/videos/AddNoteButton'
@@ -10,18 +13,71 @@ import { updateNoteAction, deleteNoteAction } from '@/lib/actions/timestampNotes
 import { formatDuration } from '@/lib/youtube/client'
 import type { SavedVideoWithDetails, VideoStatus } from '@/lib/data/videos'
 import type { VideoTimestampNote } from '@/lib/data/timestampNotes'
+import { useSidebarCollapse } from '@/components/layout/SidebarCollapseContext'
+
+export interface PlaylistNavInfo {
+  playlistId: string
+  playlistTitle?: string
+  currentIndex: number
+  totalVideos: number
+  previousVideo?: { id: string; title: string } | null
+  nextVideo?: { id: string; title: string } | null
+}
 
 interface VideoWatchViewProps {
   savedVideo: SavedVideoWithDetails
   initialNotes?: VideoTimestampNote[]
   fromPlaylist?: string
+  initialTimestamp?: number
+  playlistNav?: PlaylistNavInfo | null
+}
+
+/**
+ * Desktop-only focus mode toggle button.
+ * Collapses the app sidebar for a wider video viewing area.
+ * Mobile navigation is already hidden so this button is lg+ only.
+ */
+function FocusModeButton() {
+  const { isSidebarCollapsed, collapseSidebar, restoreSidebar } = useSidebarCollapse()
+
+  return (
+    <button
+      type="button"
+      onClick={isSidebarCollapsed ? restoreSidebar : collapseSidebar}
+      className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] bg-[var(--surface-raised)] hover:border-[var(--accent)] border border-[var(--border-subtle)] rounded-xl transition-colors cursor-pointer group"
+      aria-label={isSidebarCollapsed ? 'Exit focus mode' : 'Enter focus mode — collapse sidebar'}
+      title={isSidebarCollapsed ? 'Exit Focus Mode · Ctrl+Shift+F' : 'Focus Mode · Ctrl+Shift+F'}
+    >
+      {isSidebarCollapsed ? (
+        <>
+          <Minimize2 className="w-3.5 h-3.5 text-[var(--accent)]" />
+          <span>Exit Focus</span>
+          <kbd className="hidden xl:inline-block px-1 py-0.2 text-[9px] font-mono text-[var(--text-muted)] bg-[var(--surface)] border border-[var(--border-subtle)] rounded">
+            Ctrl+Shift+F
+          </kbd>
+        </>
+      ) : (
+        <>
+          <Maximize2 className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+          <span>Focus Mode</span>
+          <kbd className="hidden xl:inline-block px-1 py-0.2 text-[9px] font-mono text-[var(--text-muted)] bg-[var(--surface)] border border-[var(--border-subtle)] rounded">
+            Ctrl+Shift+F
+          </kbd>
+        </>
+      )}
+    </button>
+  )
 }
 
 export default function VideoWatchView({
   savedVideo,
   initialNotes = [],
   fromPlaylist,
+  initialTimestamp,
+  playlistNav,
 }: VideoWatchViewProps) {
+  const router = useRouter()
+  const { isSidebarCollapsed, collapseSidebar, restoreSidebar } = useSidebarCollapse()
   const durationSecs = savedVideo.video.duration_seconds || 0
   const isInitiallyCompleted = savedVideo.status === 'completed'
   const isInitiallyNearEnd =
@@ -30,7 +86,9 @@ export default function VideoWatchView({
 
   const [currentStatus, setCurrentStatus] = useState<VideoStatus>(savedVideo.status)
   const [currentSeconds, setCurrentSeconds] = useState<number>(
-    isInitiallyCompleted
+    typeof initialTimestamp === 'number'
+      ? initialTimestamp
+      : isInitiallyCompleted
       ? durationSecs
       : isInitiallyNearEnd
       ? 0
@@ -45,6 +103,29 @@ export default function VideoWatchView({
     )
   })
 
+  // Synchronize state when navigating between lessons in a playlist
+  const [prevVideoId, setPrevVideoId] = useState(savedVideo.id)
+  if (prevVideoId !== savedVideo.id) {
+    setPrevVideoId(savedVideo.id)
+    setCurrentStatus(savedVideo.status)
+    setCurrentSeconds(
+      typeof initialTimestamp === 'number'
+        ? initialTimestamp
+        : isInitiallyCompleted
+        ? durationSecs
+        : isInitiallyNearEnd
+        ? 0
+        : savedVideo.watch_progress_seconds || 0
+    )
+    setNotes(
+      [...initialNotes].sort(
+        (a, b) =>
+          a.timestamp_seconds - b.timestamp_seconds ||
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      )
+    )
+  }
+
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
 
   const playerRef = useRef<VideoPlayerRef>(null)
@@ -54,6 +135,42 @@ export default function VideoWatchView({
   useEffect(() => {
     currentSecondsRef.current = currentSeconds
   }, [currentSeconds])
+
+  // Persist Last Watched Video state in localStorage on progress change and page exit
+  useEffect(() => {
+    const saveLastWatchedToStorage = () => {
+      try {
+        const curSec = currentSecondsRef.current || 0
+        localStorage.setItem(
+          'studyspace_last_watched_video',
+          JSON.stringify({
+            savedVideoId: savedVideo.id,
+            videoId: savedVideo.video_id,
+            title: savedVideo.video.title,
+            channelName: savedVideo.video.channel_name,
+            thumbnailUrl: savedVideo.video.thumbnail_url,
+            timestamp: curSec,
+            duration: durationSecs,
+            fromPlaylist: fromPlaylist || null,
+            playlistTitle: playlistNav?.playlistTitle || null,
+            status: currentStatus,
+            updatedAt: new Date().toISOString(),
+          })
+        )
+      } catch {
+        // Ignore localStorage error
+      }
+    }
+
+    const interval = setInterval(saveLastWatchedToStorage, 5000)
+    window.addEventListener('beforeunload', saveLastWatchedToStorage)
+
+    return () => {
+      clearInterval(interval)
+      saveLastWatchedToStorage()
+      window.removeEventListener('beforeunload', saveLastWatchedToStorage)
+    }
+  }, [savedVideo, durationSecs, fromPlaylist, playlistNav, currentStatus])
 
   // Global YouTube-standard Keyboard Shortcuts & Input Protection
   useEffect(() => {
@@ -88,6 +205,23 @@ export default function VideoWatchView({
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement
       const targetEl = e.target as Element | null
+
+      // Focus Mode Shortcut: Ctrl/Cmd + Shift + F (always available except in text inputs)
+      if (
+        !isTextInputElement(activeEl) &&
+        !isTextInputElement(targetEl) &&
+        (e.ctrlKey || e.metaKey) &&
+        e.shiftKey &&
+        (e.key.toLowerCase() === 'f' || e.code === 'KeyF')
+      ) {
+        e.preventDefault()
+        if (isSidebarCollapsed) {
+          restoreSidebar()
+        } else {
+          collapseSidebar()
+        }
+        return
+      }
 
       // If user is currently typing inside an input/textarea/editable, protect it
       if (isTextInputElement(activeEl) || isTextInputElement(targetEl)) {
@@ -154,6 +288,20 @@ export default function VideoWatchView({
           return
         }
         // Esc does NOT exit fullscreen (fullscreen toggle is dedicated to 'f')
+        return
+      }
+
+      // Playlist Next Video: Shift + N
+      if (e.shiftKey && (e.key.toLowerCase() === 'n' || e.code === 'KeyN') && playlistNav?.nextVideo) {
+        e.preventDefault()
+        router.push(`/videos/${playlistNav.nextVideo.id}?fromPlaylist=${encodeURIComponent(playlistNav.playlistId)}`)
+        return
+      }
+
+      // Playlist Previous Video: Shift + P
+      if (e.shiftKey && (e.key.toLowerCase() === 'p' || e.code === 'KeyP') && playlistNav?.previousVideo) {
+        e.preventDefault()
+        router.push(`/videos/${playlistNav.previousVideo.id}?fromPlaylist=${encodeURIComponent(playlistNav.playlistId)}`)
         return
       }
 
@@ -295,7 +443,7 @@ export default function VideoWatchView({
 
     window.addEventListener('keydown', handleGlobalKeyDown)
     return () => window.removeEventListener('keydown', handleGlobalKeyDown)
-  }, [isShortcutsOpen])
+  }, [isShortcutsOpen, isSidebarCollapsed, collapseSidebar, playlistNav, restoreSidebar, router])
 
   const handleStatusChange = useCallback((newStatus: VideoStatus) => {
     setCurrentStatus(newStatus)
@@ -370,20 +518,144 @@ export default function VideoWatchView({
       : 0
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header & Controls */}
-      <VideoDetailHeader
-        savedVideo={savedVideo}
-        currentStatus={currentStatus}
-        currentSeconds={currentSeconds}
-        fromPlaylist={fromPlaylist}
-        onStatusToggle={handleStatusChange}
-      />
+    <div
+      className={
+        isSidebarCollapsed
+          ? 'w-full space-y-3.5 transition-all duration-[var(--duration-fast)] [transition-timing-function:var(--ease-smooth-out)]'
+          : 'max-w-6xl mx-auto space-y-6 transition-all duration-[var(--duration-fast)] [transition-timing-function:var(--ease-smooth-out)]'
+      }
+    >
+      {/* Top Header / Focus Control Bar */}
+      {isSidebarCollapsed ? (
+        <div className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--border-subtle)] rounded-2xl shadow-xs transition-colors">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Show Navigation Button */}
+            <button
+              type="button"
+              onClick={restoreSidebar}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--accent)] bg-[var(--accent-muted)] hover:bg-[var(--accent)]/15 border border-[var(--accent)]/30 rounded-xl transition-all cursor-pointer shrink-0"
+              aria-label="Show navigation sidebar"
+              title="Show Navigation"
+            >
+              <PanelLeftOpen className="w-3.5 h-3.5" />
+              <span>Show Navigation</span>
+            </button>
+
+            {/* Breadcrumb / Back */}
+            <Link
+              href={fromPlaylist ? `/playlists/${fromPlaylist}` : '/videos'}
+              className="hidden sm:inline-flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors shrink-0"
+            >
+              <span>‹ {fromPlaylist ? 'Back to Playlist' : 'Back to Videos'}</span>
+            </Link>
+
+            {/* Playlist Nav in Focus Bar */}
+            {playlistNav && (
+              <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-xl bg-[var(--surface-raised)] border border-[var(--border-subtle)] text-[11px]">
+                <span className="font-mono text-[var(--text-muted)] mr-1">
+                  Lesson {playlistNav.currentIndex}/{playlistNav.totalVideos}
+                </span>
+                {playlistNav.previousVideo ? (
+                  <Link
+                    href={`/videos/${playlistNav.previousVideo.id}?fromPlaylist=${encodeURIComponent(playlistNav.playlistId)}`}
+                    className="px-1.5 py-0.5 rounded text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--surface)] transition-colors"
+                    title={`Previous: ${playlistNav.previousVideo.title} (Shift+P)`}
+                  >
+                    ‹
+                  </Link>
+                ) : (
+                  <span className="px-1.5 py-0.5 text-[var(--text-muted)] opacity-40 cursor-not-allowed">‹</span>
+                )}
+                {playlistNav.nextVideo ? (
+                  <Link
+                    href={`/videos/${playlistNav.nextVideo.id}?fromPlaylist=${encodeURIComponent(playlistNav.playlistId)}`}
+                    className="px-1.5 py-0.5 rounded font-bold text-[var(--accent)] hover:bg-[var(--accent-muted)] transition-colors"
+                    title={`Next: ${playlistNav.nextVideo.title} (Shift+N)`}
+                  >
+                    ›
+                  </Link>
+                ) : (
+                  <span className="px-1.5 py-0.5 text-[var(--text-muted)] opacity-40 cursor-not-allowed">›</span>
+                )}
+              </div>
+            )}
+
+            <span className="hidden md:inline-block text-[var(--border-subtle)]">|</span>
+
+            <span className="text-xs font-semibold text-[var(--text-primary)] truncate hidden md:inline-block max-w-md">
+              {video.title}
+            </span>
+          </div>
+
+          {/* Right Actions in Focus Mode */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Shortcuts */}
+            <button
+              type="button"
+              onClick={() => setIsShortcutsOpen(true)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-raised)] hover:border-[var(--accent)] border border-[var(--border-subtle)] rounded-xl transition-colors cursor-pointer"
+              title="View Keyboard Shortcuts (?)"
+            >
+              <svg className="w-3.5 h-3.5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+                />
+              </svg>
+              <span className="hidden sm:inline">Shortcuts</span>
+              <kbd className="hidden lg:inline-block px-1 py-0.2 text-[10px] font-mono bg-[var(--surface)] border border-[var(--border-subtle)] rounded shadow-2xs">?</kbd>
+            </button>
+
+            {/* Open on YouTube */}
+            <a
+              href={`https://www.youtube.com/watch?v=${video.youtube_video_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-raised)] hover:border-[var(--accent)] border border-[var(--border-subtle)] rounded-xl transition-colors cursor-pointer"
+              title="Open on YouTube"
+            >
+              <span>YouTube</span>
+              <svg className="w-3 h-3 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+
+            {/* Exit Focus Button */}
+            <button
+              type="button"
+              onClick={restoreSidebar}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] bg-[var(--surface-raised)] hover:border-[var(--accent)] border border-[var(--border-subtle)] rounded-xl transition-colors cursor-pointer"
+              aria-label="Exit Focus Mode"
+              title="Exit Focus Mode · Ctrl+Shift+F"
+            >
+              <Minimize2 className="w-3.5 h-3.5 text-[var(--accent)]" />
+              <span>Exit Focus</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <VideoDetailHeader
+          savedVideo={savedVideo}
+          currentStatus={currentStatus}
+          currentSeconds={currentSeconds}
+          fromPlaylist={fromPlaylist}
+          playlistNav={playlistNav}
+          onStatusToggle={handleStatusChange}
+        />
+      )}
 
       {/* Main Layout Grid: Player & Info on Left, Timestamp Notes on Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div
+        className={
+          isSidebarCollapsed
+            ? 'grid grid-cols-1 lg:grid-cols-[1fr_340px] xl:grid-cols-[1fr_390px] gap-4 items-stretch'
+            : 'grid grid-cols-1 lg:grid-cols-12 gap-6 items-start'
+        }
+      >
         {/* Left Column: Player, Progress, Video Details */}
-        <div className="lg:col-span-8 space-y-4">
+        <div className={isSidebarCollapsed ? 'min-w-0 flex flex-col space-y-3' : 'lg:col-span-8 space-y-4'}>
           {/* Embedded YouTube Player */}
           <div className="space-y-2">
             <VideoPlayer
@@ -394,15 +666,78 @@ export default function VideoWatchView({
               onNoteCreated={handleNoteCreated}
               onStatusChange={handleStatusChange}
               onProgressChange={handleProgressChange}
+              initialStartSeconds={initialTimestamp}
             />
 
-            {/* Progress Bar & Indicators */}
-            {durationSecs > 0 && (
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-2.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 text-xs transition-colors">
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 font-medium shrink-0">
-                  <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
-                  </svg>
+            {/* Up Next in Playlist / Course Complete Card (Triggered at video finish or near end) */}
+            {playlistNav && (currentStatus === 'completed' || (durationSecs > 0 && currentSeconds >= durationSecs * 0.95)) && (
+              <div className="bg-[var(--surface)] border border-[var(--accent)]/30 rounded-2xl p-4 shadow-xs animate-in fade-in-50 duration-300">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-2xl shrink-0">
+                      {playlistNav.nextVideo ? '⏭️' : '🎉'}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-bold text-[var(--accent)] uppercase tracking-wider">
+                        {playlistNav.nextVideo
+                          ? `Up Next · Lesson ${playlistNav.currentIndex + 1} of ${playlistNav.totalVideos}`
+                          : 'Course Complete!'}
+                      </div>
+                      <p className="text-xs sm:text-sm font-semibold text-[var(--text-primary)] truncate mt-0.5">
+                        {playlistNav.nextVideo
+                          ? playlistNav.nextVideo.title
+                          : `You've completed all ${playlistNav.totalVideos} lessons in ${playlistNav.playlistTitle || 'this playlist'}!`}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    {playlistNav.previousVideo && (
+                      <Link
+                        href={`/videos/${playlistNav.previousVideo.id}?fromPlaylist=${encodeURIComponent(playlistNav.playlistId)}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-raised)] border border-[var(--border-subtle)] rounded-xl transition-colors cursor-pointer"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span>Previous Lesson</span>
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleSeek(0)}
+                      className="px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-raised)] border border-[var(--border-subtle)] rounded-xl transition-colors cursor-pointer"
+                    >
+                      Replay
+                    </button>
+                    {playlistNav.nextVideo ? (
+                      <Link
+                        href={`/videos/${playlistNav.nextVideo.id}?fromPlaylist=${encodeURIComponent(playlistNav.playlistId)}`}
+                        className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] rounded-xl shadow-xs transition-colors cursor-pointer"
+                      >
+                        <span>Next Lesson</span>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/playlists/${playlistNav.playlistId}`}
+                        className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-[var(--success)] hover:opacity-90 rounded-xl shadow-xs transition-colors cursor-pointer"
+                      >
+                        <span>Course Overview</span>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Progress Bar & Indicators (Normal Mode Only) */}
+            {!isSidebarCollapsed && durationSecs > 0 && (
+              <div className="bg-[var(--surface)] rounded-xl border border-[var(--border-subtle)] px-4 py-2.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 text-xs transition-colors">
+                <div className="flex items-center gap-2 text-[var(--text-secondary)] font-medium shrink-0">
+                  <span className={`w-2 h-2 rounded-full ${currentStatus === 'completed' ? 'bg-[var(--success)]' : 'bg-[var(--accent)] animate-pulse'}`} />
                   <span>
                     {currentStatus === 'completed'
                       ? `Completed (${durationText})`
@@ -410,10 +745,10 @@ export default function VideoWatchView({
                   </span>
                 </div>
 
-                <div className="w-full sm:max-w-xs h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shrink-0">
+                <div className="w-full sm:max-w-xs h-2 bg-[var(--surface-raised)] rounded-full overflow-hidden shrink-0 border border-[var(--border-subtle)]">
                   <div
-                    className={`h-full transition-all duration-300 ${
-                      currentStatus === 'completed' ? 'bg-emerald-500' : 'bg-red-600'
+                    className={`h-full transition-all duration-[var(--duration-slow)] [transition-timing-function:var(--ease-smooth-out)] ${
+                      currentStatus === 'completed' ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'
                     }`}
                     style={{ width: `${progressPercent}%` }}
                   />
@@ -422,125 +757,136 @@ export default function VideoWatchView({
             )}
           </div>
 
-          {/* Video Information Card */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6 shadow-xs transition-colors">
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-              <div className="space-y-2 flex-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 leading-snug">
-                  {video.title}
-                </h1>
+          {/* Video Information Card (Normal Mode Only) */}
+          {!isSidebarCollapsed && (
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] p-5 sm:p-6 shadow-xs transition-colors">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div className="space-y-2 flex-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] leading-snug">
+                    {video.title}
+                  </h1>
 
-                <div className="flex items-center gap-4 flex-wrap text-xs text-gray-500 dark:text-gray-400">
-                  {video.channel_name && (
-                    <div className="flex items-center gap-1.5 font-medium text-gray-700 dark:text-gray-300">
-                      <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                      </svg>
-                      <span>{video.channel_name}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-4 flex-wrap text-xs text-[var(--text-muted)]">
+                    {video.channel_name && (
+                      <div className="flex items-center gap-1.5 font-medium text-[var(--text-secondary)]">
+                        <svg className="w-4 h-4 text-[var(--accent)]" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                        </svg>
+                        <span>{video.channel_name}</span>
+                      </div>
+                    )}
 
-                  {durationSecs > 0 && (
-                    <div className="flex items-center gap-1">
-                      <svg
-                        className="w-3.5 h-3.5 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <span>Duration: {durationText}</span>
-                    </div>
-                  )}
+                    {durationSecs > 0 && (
+                      <div className="flex items-center gap-1 font-mono">
+                        <svg
+                          className="w-3.5 h-3.5 text-[var(--text-muted)]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span>Duration: {durationText}</span>
+                      </div>
+                    )}
 
-                  {savedVideo.saved_at && (
-                    <div className="flex items-center gap-1">
-                      <svg
-                        className="w-3.5 h-3.5 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <span>
-                        Saved on{' '}
-                        {new Date(savedVideo.saved_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </span>
-                    </div>
-                  )}
+                    {savedVideo.saved_at && (
+                      <div className="flex items-center gap-1 font-mono">
+                        <svg
+                          className="w-3.5 h-3.5 text-[var(--text-muted)]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span>
+                          Saved on{' '}
+                          {new Date(savedVideo.saved_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  {/* Focus Mode Toggle — desktop only */}
+                  <FocusModeButton />
+
+                  {/* Keyboard Shortcuts Trigger Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsShortcutsOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] bg-[var(--surface-raised)] hover:border-[var(--accent)] border border-[var(--border-subtle)] rounded-xl transition-colors cursor-pointer"
+                    title="View Keyboard Shortcuts (?)"
+                  >
+                    <svg className="w-3.5 h-3.5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+                      />
+                    </svg>
+                    <span>Shortcuts</span>
+                    <kbd className="hidden sm:inline-block px-1 py-0.2 text-[10px] font-mono bg-[var(--surface)] border border-[var(--border-subtle)] rounded shadow-2xs">?</kbd>
+                  </button>
+
+                  {/* Open on YouTube */}
+                  <a
+                    href={`https://www.youtube.com/watch?v=${video.youtube_video_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--text-primary)] bg-[var(--surface-raised)] hover:border-[var(--accent)] border border-[var(--border-subtle)] rounded-xl transition-colors cursor-pointer"
+                  >
+                    <span>Open on YouTube</span>
+                    <svg
+                      className="w-3.5 h-3.5 text-[var(--text-muted)]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </a>
                 </div>
               </div>
-
-              <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                {/* Keyboard Shortcuts Trigger Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsShortcutsOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors cursor-pointer"
-                  title="View Keyboard Shortcuts (?)"
-                >
-                  <svg className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
-                    />
-                  </svg>
-                  <span>Shortcuts</span>
-                  <kbd className="hidden sm:inline-block px-1 py-0.2 text-[10px] font-mono bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded shadow-2xs">?</kbd>
-                </button>
-
-                {/* Open on YouTube */}
-                <a
-                  href={`https://www.youtube.com/watch?v=${video.youtube_video_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors cursor-pointer"
-                >
-                  <span>Open on YouTube</span>
-                  <svg
-                    className="w-3.5 h-3.5 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
-              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right Column: Timestamp Notes Panel */}
-        <div className="lg:col-span-4">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 shadow-xs space-y-4 transition-colors">
+        <div className={isSidebarCollapsed ? 'w-full flex flex-col min-h-0' : 'lg:col-span-4'}>
+          <div
+            className={`bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] p-4 sm:p-5 shadow-xs transition-colors ${
+              isSidebarCollapsed
+                ? 'flex flex-col h-full lg:max-h-[calc(100vh-160px)] overflow-hidden'
+                : 'space-y-4'
+            }`}
+          >
             {/* Panel Header */}
-            <div className="flex items-center justify-between gap-2 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--border-subtle)] shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                <div className="w-7 h-7 rounded-lg bg-[var(--accent-muted)] border border-[var(--accent)]/30 flex items-center justify-center text-[var(--accent)]">
                   <svg
                     className="w-4 h-4"
                     fill="none"
@@ -556,8 +902,8 @@ export default function VideoWatchView({
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Timestamp Notes</h2>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  <h2 className="text-sm font-bold text-[var(--text-primary)]">Timestamp Notes</h2>
+                  <p className="text-[11px] text-[var(--text-muted)] font-mono">
                     {notes.length} {notes.length === 1 ? 'note' : 'notes'} saved
                   </p>
                 </div>
@@ -570,7 +916,7 @@ export default function VideoWatchView({
                   const curTime = playerRef.current?.getCurrentTime() ?? currentSecondsRef.current ?? 0
                   addNoteRef.current?.openForm?.(Math.max(0, Math.floor(curTime)))
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-xs transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] active:opacity-90 rounded-xl shadow-xs transition-all cursor-pointer shrink-0"
                 title="Add note at current playback time (n)"
               >
                 <svg
@@ -583,29 +929,73 @@ export default function VideoWatchView({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
                 <span>Add Note</span>
-                <kbd className="hidden sm:inline-block px-1 py-0.2 text-[10px] font-mono bg-indigo-700 dark:bg-indigo-800 text-white rounded">n</kbd>
+                <kbd className="hidden sm:inline-block px-1 py-0.2 text-[10px] font-mono bg-white/20 text-white rounded">n</kbd>
               </button>
             </div>
 
             {/* Note Composer Form Card */}
-            <AddNoteButton
-              ref={addNoteRef}
-              videoId={savedVideo.video_id}
-              getCurrentTime={handleGetCurrentTime}
-              onNoteCreated={handleNoteCreated}
-            />
+            <div className="shrink-0 pt-3">
+              <AddNoteButton
+                ref={addNoteRef}
+                videoId={savedVideo.video_id}
+                getCurrentTime={handleGetCurrentTime}
+                onNoteCreated={handleNoteCreated}
+              />
+            </div>
 
-            {/* Notes List */}
-            <TimestampNotesList
-              notes={notes}
-              onSeek={handleSeek}
-              onUpdateNote={handleUpdateNote}
-              onDeleteNote={handleDeleteNote}
-              currentSeconds={currentSeconds}
-            />
+            {/* Notes List (Independently scrollable in focus mode) */}
+            <div className={isSidebarCollapsed ? 'flex-1 overflow-y-auto min-h-0 pt-3 pr-1' : 'pt-3'}>
+              <TimestampNotesList
+                notes={notes}
+                onSeek={handleSeek}
+                onUpdateNote={handleUpdateNote}
+                onDeleteNote={handleDeleteNote}
+                currentSeconds={currentSeconds}
+              />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Persistent Bottom Video Information & Progress Strip (Focus Mode only) */}
+      {isSidebarCollapsed && (
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border-subtle)] px-4 sm:px-6 py-3 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors">
+          <div className="flex items-center gap-3 min-w-0">
+            <span
+              className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                currentStatus === 'completed' ? 'bg-[var(--success)]' : 'bg-[var(--accent)] animate-pulse'
+              }`}
+            />
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold text-[var(--text-primary)] truncate">
+                {video.title}
+              </h2>
+              {video.channel_name && (
+                <p className="text-[11px] text-[var(--text-muted)] truncate">
+                  {video.channel_name}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 shrink-0 sm:self-center">
+            <div className="font-mono text-xs font-semibold tabular-nums text-[var(--text-secondary)]">
+              {currentProgressText} / {durationText}
+              <span className="text-[var(--text-muted)] ml-1.5 font-normal">
+                ({progressPercent}%)
+              </span>
+            </div>
+            <div className="w-28 sm:w-44 h-2 bg-[var(--surface-raised)] rounded-full overflow-hidden border border-[var(--border-subtle)]">
+              <div
+                className={`h-full rounded-full transition-all duration-[var(--duration-slow)] [transition-timing-function:var(--ease-smooth-out)] ${
+                  currentStatus === 'completed' ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'
+                }`}
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Keyboard Shortcuts Help Dialog */}
       <VideoShortcutsModal

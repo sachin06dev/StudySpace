@@ -40,9 +40,9 @@ export default function MonthlySummaryCard({
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col h-full space-y-4">
+    <div className="bg-white dark:bg-(--surface) border border-slate-200/80 dark:border-(--border-subtle) rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col h-full space-y-4">
       {/* Header with Month Navigation */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/80">
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-(--border-subtle)">
         <div className="flex items-center gap-2">
           <span className="text-lg">📅</span>
           <div>
@@ -56,20 +56,20 @@ export default function MonthlySummaryCard({
         </div>
 
         {/* Month Stepper: Prev & Next buttons */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-(--surface-raised)/60 p-1 rounded-xl border border-slate-200/60 dark:border-(--border-subtle)">
           <button
             type="button"
             onClick={handlePrevMonth}
             disabled={isOldestMonth}
             aria-label="Previous month"
-            className="w-6 h-6 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer text-xs font-bold"
+            className="w-6 h-6 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-(--surface-raised) hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer text-xs font-bold"
           >
             ‹
           </button>
 
           <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 px-1">
             {currentMonthData.isCurrentMonth ? (
-              <span className="text-indigo-600 dark:text-indigo-400">Current</span>
+              <span className="text-purple-600 dark:text-purple-400">Current</span>
             ) : (
               <span>History</span>
             )}
@@ -80,7 +80,7 @@ export default function MonthlySummaryCard({
             onClick={handleNextMonth}
             disabled={isLatestMonth}
             aria-label="Next month"
-            className="w-6 h-6 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer text-xs font-bold"
+            className="w-6 h-6 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-(--surface-raised) hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer text-xs font-bold"
           >
             ›
           </button>
@@ -90,7 +90,7 @@ export default function MonthlySummaryCard({
       {/* 4 Key Metrics for Selected Month */}
       <div className="grid grid-cols-2 gap-3.5">
         {/* Total Time */}
-        <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl p-3.5">
+        <div className="bg-slate-50/70 dark:bg-(--surface-raised)/40 border border-slate-200/60 dark:border-(--border-subtle) rounded-2xl p-3.5">
           <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <span>⏱️</span>
             <span>Total Studied</span>
@@ -101,7 +101,7 @@ export default function MonthlySummaryCard({
         </div>
 
         {/* Active Days */}
-        <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl p-3.5">
+        <div className="bg-slate-50/70 dark:bg-(--surface-raised)/40 border border-slate-200/60 dark:border-(--border-subtle) rounded-2xl p-3.5">
           <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <span>🎯</span>
             <span>Active Days</span>
@@ -112,7 +112,7 @@ export default function MonthlySummaryCard({
         </div>
 
         {/* Daily Average */}
-        <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl p-3.5">
+        <div className="bg-slate-50/70 dark:bg-(--surface-raised)/40 border border-slate-200/60 dark:border-(--border-subtle) rounded-2xl p-3.5">
           <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <span>📊</span>
             <span>Daily Average</span>
@@ -123,7 +123,7 @@ export default function MonthlySummaryCard({
         </div>
 
         {/* Pomodoros Completed */}
-        <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl p-3.5">
+        <div className="bg-slate-50/70 dark:bg-(--surface-raised)/40 border border-slate-200/60 dark:border-(--border-subtle) rounded-2xl p-3.5">
           <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <span>🍅</span>
             <span>Pomodoros</span>

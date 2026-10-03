@@ -72,7 +72,7 @@ export default function SignupPage() {
             autoComplete="email"
             required
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-indigo-600 dark:focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 transition-colors"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-(--surface-raised) px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-violet-600 dark:focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-600/20 transition-colors"
           />
         </div>
 
@@ -91,7 +91,7 @@ export default function SignupPage() {
             required
             minLength={6}
             placeholder="At least 6 characters"
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-indigo-600 dark:focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 transition-colors"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-(--surface-raised) px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-violet-600 dark:focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-600/20 transition-colors"
           />
         </div>
 
@@ -110,14 +110,14 @@ export default function SignupPage() {
             required
             minLength={6}
             placeholder="Repeat password"
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-indigo-600 dark:focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 transition-colors"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-(--surface-raised) px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-violet-600 dark:focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-600/20 transition-colors"
           />
         </div>
 
         <button
           type="submit"
           disabled={isPending}
-          className="w-full mt-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all cursor-pointer"
+          className="w-full mt-2 rounded-lg bg-violet-600 hover:bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all cursor-pointer"
         >
           {isPending ? 'Creating account...' : 'Create account'}
         </button>
@@ -127,7 +127,7 @@ export default function SignupPage() {
         Already have an account?{' '}
         <Link
           href="/login"
-          className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 hover:underline"
+          className="font-medium text-violet-600 dark:text-violet-400 hover:text-violet-500 hover:underline"
         >
           Log in
         </Link>

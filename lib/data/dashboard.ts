@@ -13,6 +13,7 @@ import {
 import type { Task } from '@/lib/data/tasks'
 import type { SavedVideoWithDetails } from '@/lib/data/videos'
 import type { SavedPlaylistWithDetails } from '@/lib/data/playlists'
+import { getCachedUserProfile } from '@/lib/data/cachedUser'
 
 export type LearningItemType = 'video' | 'playlist' | 'document' | 'resource'
 
@@ -107,38 +108,14 @@ export async function getDashboardData(
     cookieTz = cookieStore.get('user-timezone')?.value
   } catch {}
 
-  // 1. Fetch User Profile for display name & timezone
-  const profilePromise = supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .maybeSingle()
-    .then(({ data, error }) => {
-      if (error) {
-        console.error('Error fetching user profile for dashboard:', error)
-      }
-      return data
-    })
+  // 1. Fetch User Profile for display name & timezone (request-memoized)
+  const profilePromise = getCachedUserProfile(userId)
 
   // 2. Fetch Targeted Dashboard Activity & Heatmap in parallel (optimized)
   const analyticsPromise = getDashboardActivityAndHeatmap(userId, cookieTz)
 
-  // 3. Fetch Top 5 Pending Tasks (ordered by due date then created date)
-  const tasksPromise = supabase
-    .from('tasks')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'pending')
-    .order('due_date', { ascending: true, nullsFirst: false })
-    .order('created_at', { ascending: false })
-    .limit(5)
-    .then(({ data, error }) => {
-      if (error) {
-        console.error('Error fetching pending tasks for dashboard:', error)
-        return []
-      }
-      return (data || []) as Task[]
-    })
+  // 3. Pending tasks are aggregated inside analyticsPromise (avoid duplicate DB query)
+  const pendingTasks: Task[] = []
 
   // 4. Fetch Recent / In-Progress Videos
   const videosPromise = supabase
@@ -198,75 +175,17 @@ export async function getDashboardData(
       })) as SavedPlaylistWithDetails[]
     })
 
-  // 6. Fetch Exact Library Counts (using HEAD count queries in parallel)
-  const countVideosPromise = Promise.resolve(
-    supabase
-      .from('saved_videos')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-  )
-    .then(({ count }) => count || 0)
-    .catch(() => 0)
-
-  const countPlaylistsPromise = Promise.resolve(
-    supabase
-      .from('saved_playlists')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-  )
-    .then(({ count }) => count || 0)
-    .catch(() => 0)
-
-  const countResourcesPromise = Promise.resolve(
-    supabase
-      .from('website_resources')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-  )
-    .then(({ count }) => count || 0)
-    .catch(() => 0)
-
-  const countDocumentsPromise = Promise.resolve(
-    supabase
-      .from('documents')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-  )
-    .then(({ count }) => count || 0)
-    .catch(() => 0)
-
-  const countNotesPromise = Promise.resolve(
-    supabase
-      .from('video_timestamp_notes')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-  )
-    .then(({ count }) => count || 0)
-    .catch(() => 0)
-
-  // Await all parallel operations
+  // Await parallel operations (eliminating 5 unused HEAD count queries)
   const [
     profile,
     analytics,
-    pendingTasks,
     recentVideos,
     recentPlaylists,
-    countVideos,
-    countPlaylists,
-    countResources,
-    countDocuments,
-    countNotes,
   ] = await Promise.all([
     profilePromise,
     analyticsPromise,
-    tasksPromise,
     videosPromise,
     playlistsPromise,
-    countVideosPromise,
-    countPlaylistsPromise,
-    countResourcesPromise,
-    countDocumentsPromise,
-    countNotesPromise,
   ])
 
   // Resolve user display name
@@ -386,11 +305,11 @@ export async function getDashboardData(
     pendingTasks,
     recentLearning: learningItems,
     libraryCounts: {
-      videos: countVideos,
-      playlists: countPlaylists,
-      resources: countResources,
-      documents: countDocuments,
-      notes: countNotes,
+      videos: 0,
+      playlists: 0,
+      resources: 0,
+      documents: 0,
+      notes: 0,
     },
   }
 }

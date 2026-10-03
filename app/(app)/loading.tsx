@@ -12,7 +12,7 @@ export default function AppLoading() {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="h-28 rounded-2xl bg-white dark:bg-[#111726] border border-gray-100 dark:border-gray-800/80 p-5 shadow-xs"
+            className="h-28 rounded-2xl bg-white dark:bg-(--surface) border border-gray-100 dark:border-(--border-subtle) p-5 shadow-xs"
           >
             <div className="h-4 w-24 bg-gray-100 dark:bg-gray-800 rounded mb-3" />
             <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
@@ -22,8 +22,8 @@ export default function AppLoading() {
 
       {/* Main content grid skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-72 rounded-2xl bg-white dark:bg-[#111726] border border-gray-100 dark:border-gray-800/80 p-6 shadow-xs" />
-        <div className="lg:col-span-1 h-72 rounded-2xl bg-white dark:bg-[#111726] border border-gray-100 dark:border-gray-800/80 p-6 shadow-xs" />
+        <div className="lg:col-span-2 h-72 rounded-2xl bg-white dark:bg-(--surface) border border-gray-100 dark:border-(--border-subtle) p-6 shadow-xs" />
+        <div className="lg:col-span-1 h-72 rounded-2xl bg-white dark:bg-(--surface) border border-gray-100 dark:border-(--border-subtle) p-6 shadow-xs" />
       </div>
     </div>
   )

@@ -1,0 +1,249 @@
+name: Release Android APK to Cloudflare R2
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: 'Release Notes (optional bulleted or comma-separated highlights)'
+        required: false
+        type: string
+        default: 'Performance improvements and bug fixes'
+      minimum_supported_build:
+        description: 'Minimum Supported Android Build Number (for mandatory updates)'
+        required: false
+        type: string
+        default: '1'
+
+concurrency:
+  group: release-android-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-test:
+    name: 1. Validate (Web Regression & Mobile Tests)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: TypeScript type-check
+        run: npx tsc --noEmit
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.5'
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Configure Android local.properties
+        working-directory: mobile/android
+        run: |
+          FLUTTER_DIR="${FLUTTER_ROOT:-$(dirname $(dirname $(which flutter)))}"
+          echo "flutter.sdk=$FLUTTER_DIR" > local.properties
+          echo "sdk.dir=$ANDROID_HOME" >> local.properties
+
+      - name: Accept Android SDK Licenses & Ensure API 36 Platform
+        run: |
+          yes | flutter doctor --android-licenses || true
+          if [ -n "$ANDROID_HOME" ]; then
+            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
+            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "platforms;android-35" "build-tools;36.0.0" 2>/dev/null || true
+          fi
+
+      - name: Flutter pub get
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Flutter analyze
+        working-directory: mobile
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos
+
+      - name: Flutter test
+        working-directory: mobile
+        run: flutter test --reporter=expanded
+
+  build-and-publish:
+    name: 2. Build Release APK & Publish to Cloudflare R2
+    needs: validate-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.5'
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Configure Android local.properties
+        working-directory: mobile/android
+        run: |
+          FLUTTER_DIR="${FLUTTER_ROOT:-$(dirname $(dirname $(which flutter)))}"
+          echo "flutter.sdk=$FLUTTER_DIR" > local.properties
+          echo "sdk.dir=$ANDROID_HOME" >> local.properties
+
+      - name: Configure Android Signing Keystore
+        working-directory: mobile/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 || secrets.STUDYSPACE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || secrets.STUDYSPACE_KEYSTORE_PASSWORD || 'android' }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || secrets.STUDYSPACE_KEY_ALIAS || 'androiddebugkey' }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || secrets.STUDYSPACE_KEY_PASSWORD || 'android' }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Decoding release keystore..."
+            echo "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
+            echo "storePassword=$KEYSTORE_PASSWORD" > key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> key.properties
+            echo "keyAlias=$KEY_ALIAS" >> key.properties
+            echo "storeFile=release.keystore" >> key.properties
+            echo "Android release signing successfully configured."
+          elif [ -f "key.properties" ]; then
+            echo "Using existing key.properties."
+          else
+            echo "::error::CRITICAL: Neither ANDROID_KEYSTORE_BASE64 nor STUDYSPACE_KEYSTORE_BASE64 was found in GitHub Secrets! Release builds must be signed with the permanent StudySpace release key to allow seamless app updates."
+            exit 1
+          fi
+
+      - name: Flutter pub get
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Build Release APK
+        working-directory: mobile
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+        run: flutter build apk --release --android-skip-build-dependency-validation
+
+      - name: Verify APK Signing Certificate
+        working-directory: mobile
+        run: |
+          EXPECTED_SHA256="641b2ce37a1ee9fe1d8e758818f161b4d5ee5ea96ecb3ad877af9567953c6f40"
+          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "::error::Built APK not found at $APK_PATH"
+            exit 1
+          fi
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -V | tail -n 1)
+          if [ -z "$APKSIGNER" ]; then
+            echo "::error::apksigner tool not found in $ANDROID_HOME/build-tools"
+            exit 1
+          fi
+          echo "Using apksigner: $APKSIGNER"
+          CERT_DIGEST=$($APKSIGNER verify --print-certs "$APK_PATH" | grep "certificate SHA-256 digest:" | head -n 1 | awk '{print $NF}' | tr -d ' :' | tr '[:upper:]' '[:lower:]')
+          echo "Expected SHA-256 : $EXPECTED_SHA256"
+          echo "Actual SHA-256   : $CERT_DIGEST"
+          if [ "$CERT_DIGEST" != "$EXPECTED_SHA256" ]; then
+            echo "::error::RELEASE CRITICAL FAILURE: APK signing key mismatch! The built APK was signed with fingerprint '$CERT_DIGEST' but must match permanent release key '$EXPECTED_SHA256'. Updates will fail on user devices if this APK is distributed."
+            exit 1
+          fi
+          echo "Signature key verification passed successfully!"
+
+      - name: Prepare Release Artifacts & Generate latest.json
+        id: prepare
+        env:
+          R2_PUBLIC_BASE_URL: ${{ secrets.R2_PUBLIC_BASE_URL || vars.R2_PUBLIC_BASE_URL }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+          MIN_BUILD: ${{ inputs.minimum_supported_build || '1' }}
+        run: |
+          node scripts/prepare-release.js \
+            --apk-dir mobile/build/app/outputs/flutter-apk \
+            --out-dir release-artifacts \
+            --base-url "${R2_PUBLIC_BASE_URL}" \
+            --min-build "${MIN_BUILD}" \
+            --notes "${RELEASE_NOTES}"
+
+      - name: Upload to Dedicated Cloudflare R2 Release Bucket
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_RELEASE_BUCKET_NAME: ${{ secrets.R2_RELEASE_BUCKET_NAME }}
+          R2_PUBLIC_BASE_URL: ${{ secrets.R2_PUBLIC_BASE_URL || vars.R2_PUBLIC_BASE_URL }}
+        run: |
+          if [ -z "$R2_SECRET_ACCESS_KEY" ] || [ -z "$R2_ACCESS_KEY_ID" ]; then
+            echo "::warning::R2 upload secrets are not configured in GitHub Secrets. Running dry-run validation."
+            node scripts/upload-r2-release.js --dry-run
+          elif [ -z "$R2_RELEASE_BUCKET_NAME" ]; then
+            echo "::error::R2_RELEASE_BUCKET_NAME is missing in GitHub Secrets! APK releases strictly require a dedicated release bucket and will never fall back to R2_BUCKET_NAME."
+            exit 1
+          else
+            node scripts/upload-r2-release.js
+          fi
+
+      - name: Archive Local Release Artifacts in GitHub Run
+        uses: actions/upload-artifact@v4
+        with:
+          name: studyspace-release-${{ steps.prepare.outputs.full_version }}
+          path: |
+            release-artifacts/*.apk
+            release-artifacts/latest.json
+          if-no-files-found: error
+
+      - name: Create or Update GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: StudySpace v${{ steps.prepare.outputs.full_version }}
+          body: |
+            ## StudySpace Release v${{ steps.prepare.outputs.full_version }}
+
+            ${{ inputs.release_notes || 'Bug fixes, performance improvements, and ecosystem updates.' }}
+
+            ---
+            - **Release Build:** `${{ steps.prepare.outputs.build_number }}`
+            - **SHA-256 Checksum:** `${{ steps.prepare.outputs.sha256 }}`
+            - **Direct Download:** [${{ steps.prepare.outputs.apk_filename }}](${{ steps.prepare.outputs.apk_url }})
+          files: |
+            release-artifacts/*.apk
+            release-artifacts/latest.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

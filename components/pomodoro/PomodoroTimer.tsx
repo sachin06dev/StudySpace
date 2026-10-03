@@ -1,6 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  SkipForward,
+  Settings2,
+  Volume2,
+  VolumeX,
+  Flame,
+  Coffee,
+  Sparkles,
+} from 'lucide-react'
 import { useTimer } from '@/lib/pomodoro/timerStore'
 import PomodoroSettings from './PomodoroSettings'
 import type { SessionType } from '@/lib/data/pomodoro'
@@ -14,6 +26,8 @@ export default function PomodoroTimer() {
     isPaused,
     cycleCount,
     settings,
+    soundEnabled,
+    setSoundEnabled,
     startSession,
     pause,
     resume,
@@ -36,143 +50,141 @@ export default function PomodoroTimer() {
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference
 
-  // Color schemes based on current mode
+  // Semantic styles for each session type
   const modeThemes: Record<
     SessionType,
     {
       name: string
-      bgGradient: string
-      activePill: string
+      icon: React.ComponentType<{ className?: string }>
+      badge: string
       ringColor: string
-      textColor: string
-      btnPrimary: string
-      accentBg: string
+      activeButton: string
     }
   > = {
     focus: {
-      name: 'Focus Session',
-      bgGradient: 'from-indigo-50/50 dark:from-indigo-950/40 via-white dark:via-gray-900 to-blue-50/30 dark:to-gray-900',
-      activePill: 'bg-indigo-600 text-white shadow-xs',
-      ringColor: 'stroke-indigo-600 dark:stroke-indigo-500',
-      textColor: 'text-indigo-950 dark:text-indigo-100',
-      btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200 dark:shadow-none',
-      accentBg: 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300',
+      name: 'Focus Interval',
+      icon: Flame,
+      badge: 'bg-[var(--accent-subtle)] text-[var(--accent)] border-[var(--border-subtle)]',
+      ringColor: 'stroke-[var(--accent)]',
+      activeButton: 'bg-[var(--accent)] text-white shadow-xs',
     },
     short_break: {
-      name: 'Short Break',
-      bgGradient: 'from-emerald-50/50 dark:from-emerald-950/40 via-white dark:via-gray-900 to-teal-50/30 dark:to-gray-900',
-      activePill: 'bg-emerald-600 text-white shadow-xs',
-      ringColor: 'stroke-emerald-600 dark:stroke-emerald-500',
-      textColor: 'text-emerald-950 dark:text-emerald-100',
-      btnPrimary: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-200 dark:shadow-none',
-      accentBg: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300',
+      name: 'Short Rest',
+      icon: Coffee,
+      badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+      ringColor: 'stroke-emerald-500',
+      activeButton: 'bg-emerald-600 text-white shadow-xs',
     },
     long_break: {
-      name: 'Long Break',
-      bgGradient: 'from-violet-50/50 dark:from-violet-950/40 via-white dark:via-gray-900 to-purple-50/30 dark:to-gray-900',
-      activePill: 'bg-violet-600 text-white shadow-xs',
-      ringColor: 'stroke-violet-600 dark:stroke-violet-500',
-      textColor: 'text-violet-950 dark:text-violet-100',
-      btnPrimary: 'bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-200 dark:shadow-none',
-      accentBg: 'bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300',
+      name: 'Extended Rest',
+      icon: Sparkles,
+      badge: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+      ringColor: 'stroke-indigo-500',
+      activeButton: 'bg-indigo-600 text-white shadow-xs',
     },
   }
 
   const currentTheme = modeThemes[sessionType]
+  const ModeIcon = currentTheme.icon
 
   return (
     <div
-      className={`bg-gradient-to-b ${currentTheme.bgGradient} rounded-3xl border border-gray-200/80 dark:border-gray-800 p-4 sm:p-6 lg:p-8 shadow-xs mb-8 transition-colors duration-300`}
+      id="pomodoro-instrument"
+      className="bg-[var(--surface)] rounded-3xl border border-[var(--border-subtle)] p-6 sm:p-8 lg:p-10 shadow-xs mb-8 transition-all relative overflow-hidden"
     >
-      {/* Top Bar: Mode Selectors & Settings Button */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 sm:mb-8">
-        {/* Mode Selector Tabs */}
-        <div className="flex items-center gap-1 sm:gap-1.5 bg-gray-200/60 dark:bg-gray-800/80 p-1 sm:p-1.5 rounded-2xl backdrop-blur-xs max-w-full overflow-x-auto">
+      {/* 1. Header Instrument Controls */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+        {/* Mode Segmented Switcher */}
+        <div className="flex items-center gap-1 bg-[var(--surface-muted)] p-1 rounded-2xl border border-[var(--border-subtle)]">
           <button
             type="button"
             onClick={() => setMode('focus')}
-            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               sessionType === 'focus'
-                ? modeThemes.focus.activePill
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
+                ? modeThemes.focus.activeButton
+                : 'text-[var(--foreground-muted)] hover:text-[var(--foreground)]'
             }`}
           >
-            Focus
+            Focus (25m)
           </button>
           <button
             type="button"
             onClick={() => setMode('short_break')}
-            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               sessionType === 'short_break'
-                ? modeThemes.short_break.activePill
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
+                ? modeThemes.short_break.activeButton
+                : 'text-[var(--foreground-muted)] hover:text-[var(--foreground)]'
             }`}
           >
-            Short Break
+            Short Break (5m)
           </button>
           <button
             type="button"
             onClick={() => setMode('long_break')}
-            className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               sessionType === 'long_break'
-                ? modeThemes.long_break.activePill
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
+                ? modeThemes.long_break.activeButton
+                : 'text-[var(--foreground-muted)] hover:text-[var(--foreground)]'
             }`}
           >
-            Long Break
+            Long Break (15m)
           </button>
         </div>
 
-        {/* Cycle indicator & Settings button */}
-        <div className="flex items-center gap-3">
+        {/* Right Header Utilities: Sound, Cycles, Settings */}
+        <div className="flex items-center gap-2">
+          {/* Sound Mute Toggle */}
+          <button
+            type="button"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-[var(--surface-muted)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-[var(--border-subtle)] transition-colors cursor-pointer"
+            title={soundEnabled ? 'Chime sound enabled' : 'Sound muted'}
+            aria-label={soundEnabled ? 'Mute chime sound' : 'Enable chime sound'}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
           {/* Focus Cycle Dots */}
-          <div className="flex items-center gap-1.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 px-3 py-1.5 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-300 shadow-2xs">
-            <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mr-1">
-              Cycle:
+          <div className="flex items-center gap-1.5 bg-[var(--surface-muted)] border border-[var(--border-subtle)] px-3 py-1.5 rounded-xl text-xs font-medium text-[var(--foreground-muted)]">
+            <span className="text-[10px] font-bold uppercase tracking-wider">
+              Cycle
             </span>
             <div className="flex items-center gap-1">
               {Array.from({ length: settings.long_break_interval }).map((_, idx) => (
                 <div
                   key={idx}
                   title={`Session ${idx + 1} of ${settings.long_break_interval}`}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  className={`w-2 h-2 rounded-full transition-all ${
                     idx < cycleCount
-                      ? 'bg-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900'
+                      ? 'bg-[var(--accent)] ring-1 ring-[var(--accent)]/40'
                       : idx === cycleCount && sessionType === 'focus'
-                      ? 'bg-indigo-400 animate-pulse'
-                      : 'bg-gray-200 dark:bg-gray-700'
+                      ? 'bg-[var(--accent)] opacity-60 animate-pulse'
+                      : 'bg-[var(--surface-overlay)] border border-[var(--border-subtle)]'
                   }`}
                 />
               ))}
             </div>
-            <span className="text-[11px] text-gray-400 dark:text-gray-500 ml-1">
+            <span className="text-[10px] opacity-70">
               {cycleCount}/{settings.long_break_interval}
             </span>
           </div>
 
-          {/* Settings Button */}
+          {/* Settings Trigger */}
           <button
             type="button"
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200/80 dark:border-gray-700/80 shadow-2xs transition-all cursor-pointer"
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-[var(--surface-muted)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-[var(--border-subtle)] transition-colors cursor-pointer"
             title="Timer Settings"
             aria-label="Open Timer Settings"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+            <Settings2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Main Timer Display */}
-      <div className="flex flex-col items-center justify-center my-4 sm:my-6">
-        <div className="relative w-56 h-56 sm:w-72 sm:h-72 flex items-center justify-center">
+      {/* 2. Dominant Central Timer Instrument */}
+      <div className="flex flex-col items-center justify-center my-6 sm:my-8">
+        <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center">
           {/* Circular Progress SVG */}
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 280 280">
             {/* Background track circle */}
@@ -180,8 +192,8 @@ export default function PomodoroTimer() {
               cx="140"
               cy="140"
               r={radius}
-              className="stroke-gray-200/80 dark:stroke-gray-800"
-              strokeWidth="10"
+              className="stroke-[var(--surface-muted)]"
+              strokeWidth="8"
               fill="transparent"
             />
             {/* Animated progress circle */}
@@ -190,7 +202,7 @@ export default function PomodoroTimer() {
               cy="140"
               r={radius}
               className={`${currentTheme.ringColor} transition-all duration-300 ease-linear`}
-              strokeWidth="10"
+              strokeWidth="8"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
@@ -198,35 +210,48 @@ export default function PomodoroTimer() {
             />
           </svg>
 
-          {/* Center Content: Time & Status */}
+          {/* Center Content: Mode, Time Display & State Indicator */}
           <div className="absolute flex flex-col items-center justify-center text-center select-none">
             <span
-              className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-1 ${currentTheme.accentBg}`}
+              className={`text-[11px] font-semibold tracking-wider px-3 py-0.5 rounded-full mb-2 border flex items-center gap-1.5 ${currentTheme.badge}`}
             >
-              {currentTheme.name}
+              <ModeIcon className="w-3 h-3" />
+              <span>{currentTheme.name}</span>
             </span>
-            <div
-              className={`text-4xl sm:text-6xl font-extrabold tracking-tight font-mono ${currentTheme.textColor}`}
-            >
+
+            {/* Time: Monospace, Large & Crisp */}
+            <div className="text-5xl sm:text-7xl font-extrabold tracking-tighter font-mono text-[var(--foreground)] tabular-nums">
               {formatTimeDisplay(remainingSeconds)}
             </div>
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-2 capitalize">
-              {timerStatus === 'running'
-                ? '• In Progress'
-                : timerStatus === 'paused'
-                ? '⏸ Paused'
-                : 'Ready to Start'}
-            </span>
+
+            {/* Visual State Feedback */}
+            <div className="mt-3 flex items-center gap-1.5 text-xs font-medium">
+              {timerStatus === 'running' ? (
+                <span className="flex items-center gap-1.5 text-emerald-500">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span>Focus in progress</span>
+                </span>
+              ) : timerStatus === 'paused' ? (
+                <span className="flex items-center gap-1.5 text-amber-500">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span>Session paused</span>
+                </span>
+              ) : (
+                <span className="text-[var(--foreground-muted)]">
+                  Ready to begin ({Math.round(plannedSeconds / 60)} min)
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Quick Duration Adjusters */}
-        <div className="flex items-center gap-1.5 sm:gap-2 mt-4 flex-wrap justify-center">
+        {/* Quick Micro Adjusters (-5m, -1m, +1m, +5m) */}
+        <div className="flex items-center gap-1.5 mt-4">
           <button
             type="button"
             onClick={() => adjustDuration(-5)}
             disabled={remainingSeconds <= 300}
-            className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 disabled:hover:text-gray-500 bg-white/70 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 border border-gray-200/80 dark:border-gray-700 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
+            className="text-[11px] font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-30 bg-[var(--surface-muted)] border border-[var(--border-subtle)] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
             title="Subtract 5 minutes"
           >
             -5m
@@ -235,16 +260,18 @@ export default function PomodoroTimer() {
             type="button"
             onClick={() => adjustDuration(-1)}
             disabled={remainingSeconds <= 60}
-            className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 disabled:hover:text-gray-500 bg-white/70 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 border border-gray-200/80 dark:border-gray-700 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
+            className="text-[11px] font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-30 bg-[var(--surface-muted)] border border-[var(--border-subtle)] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
             title="Subtract 1 minute"
           >
             -1m
           </button>
-          <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500 px-1">Adjust</span>
+          <span className="text-[10px] text-[var(--foreground-muted)] px-1 uppercase tracking-wider font-semibold">
+            Adjust
+          </span>
           <button
             type="button"
             onClick={() => adjustDuration(1)}
-            className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 bg-white/70 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 border border-gray-200/80 dark:border-gray-700 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
+            className="text-[11px] font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] bg-[var(--surface-muted)] border border-[var(--border-subtle)] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
             title="Add 1 minute"
           >
             +1m
@@ -252,7 +279,7 @@ export default function PomodoroTimer() {
           <button
             type="button"
             onClick={() => adjustDuration(5)}
-            className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 bg-white/70 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 border border-gray-200/80 dark:border-gray-700 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
+            className="text-[11px] font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] bg-[var(--surface-muted)] border border-[var(--border-subtle)] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
             title="Add 5 minutes"
           >
             +5m
@@ -260,24 +287,18 @@ export default function PomodoroTimer() {
         </div>
       </div>
 
-      {/* Timer Controls */}
-      <div className="flex items-center justify-center gap-4 mt-6">
+      {/* 3. Primary Control Action Row */}
+      <div className="flex items-center justify-center gap-4 mt-4">
         {/* Reset Button */}
         <button
           type="button"
           onClick={reset}
           disabled={timerStatus === 'idle'}
-          className="p-3 rounded-2xl bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200/80 dark:border-gray-700 disabled:opacity-40 disabled:hover:bg-white/80 disabled:cursor-not-allowed shadow-xs transition-all cursor-pointer"
-          title="Reset / Cancel Session"
+          className="w-12 h-12 flex items-center justify-center rounded-2xl bg-[var(--surface-muted)] hover:bg-[var(--surface-overlay)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-[var(--border-subtle)] disabled:opacity-35 disabled:cursor-not-allowed transition-all cursor-pointer"
+          title="Reset Session"
           aria-label="Reset Timer"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
+          <RotateCcw className="w-4 h-4" />
         </button>
 
         {/* Primary Action Button (Start / Pause / Resume) */}
@@ -285,34 +306,28 @@ export default function PomodoroTimer() {
           <button
             type="button"
             onClick={pause}
-            className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md shadow-amber-200 dark:shadow-none transition-all cursor-pointer transform active:scale-95"
+            className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-xs transition-all cursor-pointer transform active:scale-95 min-w-[150px]"
           >
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-            </svg>
-            Pause
+            <Pause className="w-4 h-4 fill-current" />
+            <span>Pause</span>
           </button>
         ) : timerStatus === 'paused' ? (
           <button
             type="button"
             onClick={resume}
-            className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl ${currentTheme.btnPrimary} font-bold text-sm transition-all cursor-pointer transform active:scale-95`}
+            className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[var(--accent)] hover:opacity-90 text-white font-bold text-sm shadow-xs transition-all cursor-pointer transform active:scale-95 min-w-[150px]"
           >
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-            Resume
+            <Play className="w-4 h-4 fill-current" />
+            <span>Resume</span>
           </button>
         ) : (
           <button
             type="button"
             onClick={startSession}
-            className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl ${currentTheme.btnPrimary} font-bold text-sm transition-all cursor-pointer transform active:scale-95`}
+            className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-[var(--accent)] hover:opacity-90 text-white font-bold text-sm shadow-xs transition-all cursor-pointer transform active:scale-95 min-w-[150px]"
           >
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-            Start Focus
+            <Play className="w-4 h-4 fill-current" />
+            <span>Start {sessionType === 'focus' ? 'Focus' : 'Break'}</span>
           </button>
         )}
 
@@ -320,13 +335,11 @@ export default function PomodoroTimer() {
         <button
           type="button"
           onClick={skip}
-          className="p-3 rounded-2xl bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200/80 dark:border-gray-700 shadow-xs transition-all cursor-pointer"
+          className="w-12 h-12 flex items-center justify-center rounded-2xl bg-[var(--surface-muted)] hover:bg-[var(--surface-overlay)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-[var(--border-subtle)] transition-all cursor-pointer"
           title="Skip to next session"
           aria-label="Skip to next session"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-          </svg>
+          <SkipForward className="w-4 h-4" />
         </button>
       </div>
 

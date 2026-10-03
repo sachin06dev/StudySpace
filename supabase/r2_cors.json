@@ -1,0 +1,22 @@
+[
+  {
+    "AllowedOrigins": [
+      "http://localhost:3000",
+      "https://studyspace4u.vercel.app",
+      "https://studyspace-ebon.vercel.app"
+    ],
+    "AllowedMethods": [
+      "PUT",
+      "GET",
+      "HEAD",
+      "DELETE"
+    ],
+    "AllowedHeaders": [
+      "Content-Type"
+    ],
+    "ExposeHeaders": [
+      "ETag"
+    ],
+    "MaxAgeSeconds": 3600
+  }
+]

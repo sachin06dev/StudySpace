@@ -1,151 +1,415 @@
 'use client'
 
+import React, { useState, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import {
+  LayoutDashboard,
+  Calendar,
+  CheckCircle2,
+  BookOpen,
+  BarChart3,
+  Settings,
+  ChevronDown,
+  CheckSquare,
+  Timer,
+  FileText,
+  FolderLock,
+  Video,
+  ListVideo,
+  Globe,
+  Search,
+  LogOut,
+  PanelLeftClose,
+  PanelLeft,
+} from 'lucide-react'
 import { logout } from '@/lib/actions/auth'
 import PomodoroMiniWidget from '@/components/pomodoro/PomodoroMiniWidget'
 import ThemeToggle from '@/components/shared/ThemeToggle'
 import StudySpaceLogo from '@/components/shared/StudySpaceLogo'
+import { formatEmailLocalPart } from '@/lib/utils/userName'
+import { useSidebarCollapse } from './SidebarCollapseContext'
 
 export interface NavItem {
   name: string
   href: string
-  icon: React.ReactNode
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+  subItems?: {
+    name: string
+    href: string
+    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+  }[]
 }
 
-export const NAV_ITEMS: NavItem[] = [
+export const PRIMARY_NAV_ITEMS: NavItem[] = [
   {
     name: 'Dashboard',
     href: '/dashboard',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-      </svg>
-    ),
+    icon: LayoutDashboard,
   },
   {
-    name: 'Tasks',
-    href: '/tasks',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-      </svg>
-    ),
+    name: 'Timetable',
+    href: '/timetable',
+    icon: Calendar,
   },
   {
-    name: 'Pomodoro',
-    href: '/pomodoro',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
+    name: 'Attendance',
+    href: '/attendance',
+    icon: CheckCircle2,
   },
   {
-    name: 'Videos',
-    href: '/videos',
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-      </svg>
-    ),
-  },
-  {
-    name: 'Playlists',
-    href: '/playlists',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-      </svg>
-    ),
-  },
-  {
-    name: 'Resources',
-    href: '/resources',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-      </svg>
-    ),
-  },
-  {
-    name: 'Notes',
-    href: '/notes',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-      </svg>
-    ),
-  },
-  {
-    name: 'Documents',
-    href: '/documents',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
+    name: 'Study',
+    href: '/study',
+    icon: BookOpen,
+    subItems: [
+      { name: 'Tasks', href: '/tasks', icon: CheckSquare },
+      { name: 'Focus', href: '/pomodoro', icon: Timer },
+      { name: 'Notes', href: '/notes', icon: FileText },
+      { name: 'Documents', href: '/documents', icon: FolderLock },
+      { name: 'Videos', href: '/videos', icon: Video },
+      { name: 'Playlists', href: '/playlists', icon: ListVideo },
+      { name: 'Resources', href: '/resources', icon: Globe },
+    ],
   },
   {
     name: 'Analytics',
     href: '/analytics',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
+    icon: BarChart3,
   },
   {
     name: 'Settings',
     href: '/settings',
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
+    icon: Settings,
   },
 ]
 
 interface AppSidebarProps {
   userEmail?: string | null
+  userName?: string | null
 }
 
-export default function AppSidebar({ userEmail }: AppSidebarProps) {
+export default function AppSidebar({ userEmail, userName }: AppSidebarProps) {
   const pathname = usePathname()
+  const { isSidebarCollapsed, toggleSidebar } = useSidebarCollapse()
+  const [studyFlyoutOpen, setStudyFlyoutOpen] = useState(false)
+  const [studyOpen, setStudyOpen] = useState(
+    pathname.startsWith('/study') ||
+      pathname.startsWith('/tasks') ||
+      pathname.startsWith('/pomodoro') ||
+      pathname.startsWith('/notes') ||
+      pathname.startsWith('/documents') ||
+      pathname.startsWith('/videos') ||
+      pathname.startsWith('/playlists') ||
+      pathname.startsWith('/resources')
+  )
 
+  const resolvedName = userName?.trim() || formatEmailLocalPart(userEmail)
+  const userInitial = resolvedName.charAt(0).toUpperCase()
+
+  const flyoutTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleMouseEnterStudy = () => {
+    if (flyoutTimerRef.current) {
+      clearTimeout(flyoutTimerRef.current)
+      flyoutTimerRef.current = null
+    }
+    setStudyFlyoutOpen(true)
+  }
+
+  const handleMouseLeaveStudy = () => {
+    if (flyoutTimerRef.current) clearTimeout(flyoutTimerRef.current)
+    flyoutTimerRef.current = setTimeout(() => {
+      setStudyFlyoutOpen(false)
+    }, 200)
+  }
+
+  // Collapsed Mode (Icon Rail)
+  if (isSidebarCollapsed) {
+    return (
+      <aside
+        className="w-[72px] shrink-0 border-r border-(--border-subtle) bg-(--surface) py-4 px-2 flex flex-col justify-between h-screen sticky top-0 z-30 transition-all duration-200 select-none"
+        aria-label="Navigation Icon Rail"
+      >
+        <div className="flex flex-col items-center space-y-4">
+          {/* Logo & Toggle */}
+          <div className="flex flex-col items-center gap-2">
+            <Link href="/dashboard" className="p-1 rounded-xl hover:bg-(--surface-raised) transition-colors">
+              <StudySpaceLogo size="sm" showText={false} />
+            </Link>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title="Expand sidebar ([)"
+              aria-label="Expand sidebar"
+              className="p-1.5 rounded-lg text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-raised) transition-colors cursor-pointer"
+            >
+              <PanelLeft className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Quick Search Trigger Icon */}
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('studyspace:open-search'))
+            }}
+            title="Search anything (⌘K)"
+            aria-label="Search"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-raised) border border-(--border-subtle) transition-colors cursor-pointer"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
+          {/* Navigation Items (Icons only with floating tooltips & flyouts) */}
+          <nav className="flex flex-col items-center space-y-1.5 w-full">
+            {PRIMARY_NAV_ITEMS.map((item) => {
+              const Icon = item.icon
+              const isExactActive = pathname === item.href
+              const isSubActive =
+                item.subItems?.some((sub) => pathname.startsWith(sub.href)) || false
+              const isActive =
+                isExactActive ||
+                (item.href !== '/dashboard' && pathname.startsWith(item.href)) ||
+                isSubActive
+
+              if (item.subItems) {
+                return (
+                  <div
+                    key={item.name}
+                    className="relative"
+                    onMouseEnter={handleMouseEnterStudy}
+                    onMouseLeave={handleMouseLeaveStudy}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setStudyFlyoutOpen((prev) => !prev)}
+                      title={`${item.name} (Click or hover for study tools)`}
+                      aria-expanded={studyFlyoutOpen}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
+                        isActive
+                          ? 'bg-(--accent-muted) text-(--accent) shadow-2xs font-semibold'
+                          : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--surface-raised)'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" strokeWidth={2} />
+                    </button>
+
+                    {/* Flyout for Study sub-items in rail mode */}
+                    {studyFlyoutOpen && (
+                      <div
+                        className="absolute left-full top-0 pl-2.5 z-50 animate-in fade-in slide-in-from-left-2 duration-150"
+                        onMouseEnter={handleMouseEnterStudy}
+                        onMouseLeave={handleMouseLeaveStudy}
+                      >
+                        <div className="w-56 bg-(--surface) border border-(--border-subtle) rounded-2xl shadow-2xl p-2">
+                          <div className="px-2.5 py-1 text-[10px] font-mono text-(--text-muted) uppercase tracking-wider font-semibold border-b border-(--border-subtle) mb-1">
+                            Study Tools
+                          </div>
+                          {item.subItems.map((sub) => {
+                            const SubIcon = sub.icon
+                            const isSubActiveItem = pathname === sub.href || pathname.startsWith(sub.href)
+                            return (
+                              <Link
+                                key={sub.name}
+                                href={sub.href}
+                                onClick={() => setStudyFlyoutOpen(false)}
+                                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                  isSubActiveItem
+                                    ? 'bg-(--accent-muted) text-(--accent) font-semibold'
+                                    : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--surface-raised)'
+                                }`}
+                              >
+                                <SubIcon className="w-4 h-4 shrink-0" />
+                                <span>{sub.name}</span>
+                              </Link>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  title={item.name}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                    isActive
+                      ? 'bg-(--accent-muted) text-(--accent) shadow-2xs font-semibold'
+                      : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--surface-raised)'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" strokeWidth={2} />
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+
+        {/* Bottom Rail Actions */}
+        <div className="flex flex-col items-center space-y-3 pt-3 border-t border-(--border-subtle)">
+          <ThemeToggle />
+          <div
+            className="w-8 h-8 rounded-full bg-(--accent) text-white flex items-center justify-center text-xs font-bold shadow-2xs"
+            title={resolvedName}
+          >
+            {userInitial}
+          </div>
+          <form action={logout}>
+            <button
+              type="submit"
+              title="Sign out"
+              aria-label="Sign out"
+              className="p-2 text-(--text-muted) hover:text-(--danger) hover:bg-(--danger-muted) rounded-lg transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </form>
+        </div>
+      </aside>
+    )
+  }
+
+  // Expanded Mode (Full Sidebar)
   return (
-    <aside className="w-64 shrink-0 border-r border-gray-200/80 dark:border-gray-800/80 bg-white/90 dark:bg-[#0c111e]/90 backdrop-blur-md p-4 flex flex-col justify-between h-screen sticky top-0 z-20 transition-colors">
+    <aside className="w-64 shrink-0 border-r border-(--border-subtle) bg-(--surface) p-4 flex flex-col justify-between h-screen sticky top-0 z-20 transition-all duration-200 select-none">
       <div className="overflow-y-auto pr-1">
-        {/* Brand Header */}
-        <div className="flex items-center justify-between px-2 mb-6">
+        {/* Brand Header with Collapse Toggle */}
+        <div className="flex items-center justify-between px-2 mb-5">
           <Link href="/dashboard" className="flex items-center group">
             <StudySpaceLogo size="md" showText showSubtitle />
           </Link>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title="Collapse sidebar ([)"
+              aria-label="Collapse sidebar"
+              className="p-1.5 rounded-lg text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-raised) transition-colors cursor-pointer"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+            <ThemeToggle />
+          </div>
         </div>
 
-        {/* Navigation items */}
+        {/* Global Quick Search Trigger */}
+        <div className="px-1 mb-4">
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('studyspace:open-search'))
+            }}
+            className="w-full flex items-center justify-between gap-2 px-3 py-2 text-xs bg-(--surface-raised) text-(--text-muted) hover:text-(--text-primary) border border-(--border-subtle) hover:border-(--border-strong) rounded-(--radius-md) transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <Search className="w-3.5 h-3.5 text-(--text-muted) shrink-0" strokeWidth={2} />
+              <span>Search anything...</span>
+            </div>
+            <kbd className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-(--surface) border border-(--border-subtle) text-(--text-muted)">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+
+        {/* Primary Navigation Items */}
         <nav aria-label="Main Navigation" className="space-y-1">
-          {NAV_ITEMS.map((item) => {
+          {PRIMARY_NAV_ITEMS.map((item) => {
+            const Icon = item.icon
+            const isExactActive = pathname === item.href
+            const isSubActive =
+              item.subItems?.some((sub) => pathname.startsWith(sub.href)) || false
             const isActive =
-              pathname === item.href ||
-              (item.href !== '/dashboard' && pathname.startsWith(item.href))
+              isExactActive ||
+              (item.href !== '/dashboard' && pathname.startsWith(item.href)) ||
+              isSubActive
+
+            if (item.subItems) {
+              return (
+                <div key={item.name} className="space-y-1">
+                  <div className="flex items-center">
+                    <Link
+                      href={item.href}
+                      className={`flex-1 flex items-center gap-3 px-3 py-2 rounded-(--radius-md) text-xs font-medium transition-all duration-150 ${
+                        isActive
+                          ? 'bg-(--accent-muted) text-(--accent) font-semibold shadow-2xs'
+                          : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--surface-raised)'
+                      }`}
+                    >
+                      <Icon
+                        className={`w-4 h-4 shrink-0 ${
+                          isActive ? 'text-(--accent)' : 'text-(--text-muted)'
+                        }`}
+                        strokeWidth={2}
+                      />
+                      <span className="truncate">{item.name}</span>
+                    </Link>
+                    <button
+                      type="button"
+                      aria-label="Toggle study sub-items"
+                      onClick={() => setStudyOpen(!studyOpen)}
+                      className="p-2 text-(--text-muted) hover:text-(--text-primary) rounded-(--radius-sm) transition-colors cursor-pointer"
+                    >
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-transform duration-[var(--duration-fast)] [transition-timing-function:var(--ease-smooth-out)] ${
+                          studyOpen ? 'rotate-180' : ''
+                        }`}
+                        strokeWidth={2}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Secondary Study Items */}
+                  {studyOpen && (
+                    <div className="pl-6 pr-1 py-1 space-y-0.5 border-l-2 border-(--border-subtle) ml-4">
+                      {item.subItems.map((sub) => {
+                        const SubIcon = sub.icon
+                        const isSubItemActive = pathname === sub.href || pathname.startsWith(sub.href)
+                        return (
+                          <Link
+                            key={sub.name}
+                            href={sub.href}
+                            className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-(--radius-sm) text-[11px] font-medium transition-colors ${
+                              isSubItemActive
+                                ? 'text-(--accent) font-semibold bg-(--accent-muted)'
+                                : 'text-(--text-muted) hover:text-(--text-primary) hover:bg-(--surface-raised)'
+                            }`}
+                          >
+                            <SubIcon
+                              className={`w-3.5 h-3.5 shrink-0 ${
+                                isSubItemActive ? 'text-(--accent)' : 'text-(--text-muted)'
+                              }`}
+                              strokeWidth={2}
+                            />
+                            <span className="truncate">{sub.name}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            }
 
             return (
               <Link
-                key={item.href}
+                key={item.name}
                 href={item.href}
-                prefetch={true}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium border transition-colors duration-150 ${
+                className={`flex items-center gap-3 px-3 py-2 rounded-(--radius-md) text-xs font-medium transition-all duration-150 ${
                   isActive
-                    ? 'bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-100/80 dark:border-indigo-500/20 font-semibold shadow-2xs'
-                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100/70 dark:hover:bg-gray-800/50'
+                    ? 'bg-(--accent-muted) text-(--accent) font-semibold shadow-2xs'
+                    : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--surface-raised)'
                 }`}
               >
-                <span className={`shrink-0 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'}`}>
-                  {item.icon}
-                </span>
+                <Icon
+                  className={`w-4 h-4 shrink-0 ${
+                    isActive ? 'text-(--accent)' : 'text-(--text-muted)'
+                  }`}
+                  strokeWidth={2}
+                />
                 <span className="truncate">{item.name}</span>
               </Link>
             )
@@ -153,32 +417,37 @@ export default function AppSidebar({ userEmail }: AppSidebarProps) {
         </nav>
       </div>
 
-      {/* Footer: Pomodoro widget, User email pill & Logout */}
-      <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-2.5">
+      {/* Footer Anchor: Pomodoro Widget, User Profile Pill & Sign Out */}
+      <div className="pt-3 border-t border-(--border-subtle) space-y-2.5">
         <PomodoroMiniWidget />
 
-        {userEmail && (
-          <div className="px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700/60 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 min-w-0">
-            <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 flex items-center justify-center text-[10px] font-bold shrink-0">
-              {userEmail.charAt(0).toUpperCase()}
+        {/* User Profile Anchor */}
+        <div className="p-2 rounded-(--radius-md) bg-(--surface-raised) border border-(--border-subtle) flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-7 h-7 rounded-(--radius-full) bg-(--accent) text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
+              {userInitial}
             </div>
-            <span className="truncate text-[11px]" title={userEmail}>
-              {userEmail}
-            </span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-semibold text-(--text-primary) truncate capitalize" title={resolvedName}>
+                {resolvedName}
+              </span>
+              <span className="text-[10px] text-(--text-muted) uppercase tracking-wider">
+                Student
+              </span>
+            </div>
           </div>
-        )}
 
-        <form action={logout}>
-          <button
-            type="submit"
-            className="w-full flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-colors cursor-pointer"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span>Sign out</span>
-          </button>
-        </form>
+          <form action={logout}>
+            <button
+              type="submit"
+              aria-label="Sign out"
+              title="Sign out"
+              className="p-1.5 rounded-(--radius-sm) text-(--text-muted) hover:text-(--danger) hover:bg-(--danger-muted) transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" strokeWidth={2} />
+            </button>
+          </form>
+        </div>
       </div>
     </aside>
   )

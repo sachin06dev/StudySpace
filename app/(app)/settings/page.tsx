@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { getUserSettings } from '@/lib/data/pomodoro'
-import { getUserTimezone } from '@/lib/data/analytics'
+import {
+  getCachedUser,
+  getCachedUserSettings,
+  getCachedUserTimezone,
+} from '@/lib/data/cachedUser'
 import PageHeader from '@/components/shared/PageHeader'
 import SettingsView from '@/components/settings/SettingsView'
 
@@ -11,18 +13,15 @@ export const metadata = {
 }
 
 export default async function SettingsPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCachedUser()
 
   if (!user) {
     redirect('/login')
   }
 
   const [userSettings, timezone] = await Promise.all([
-    getUserSettings(user.id),
-    getUserTimezone(user.id),
+    getCachedUserSettings(user.id),
+    getCachedUserTimezone(user.id),
   ])
 
   return (

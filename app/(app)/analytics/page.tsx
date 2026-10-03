@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
-import { createClient } from '@/lib/supabase/server'
+import { getCachedUser } from '@/lib/data/cachedUser'
 import { getComprehensiveAnalytics } from '@/lib/data/analytics'
 import PageHeader from '@/components/shared/PageHeader'
 import AnalyticsView from '@/components/analytics/AnalyticsView'
@@ -12,23 +12,28 @@ export const metadata = {
   description: 'Track your 365-day study consistency, activity heatmap, weekly study charts, and focus insights.',
 }
 
-
-async function AnalyticsContent({ userId }: { userId: string }) {
+async function AnalyticsContent({
+  userId,
+  semesterId,
+}: {
+  userId: string
+  semesterId?: string
+}) {
   let cookieTz: string | undefined
   try {
     const cookieStore = await cookies()
     cookieTz = cookieStore.get('user-timezone')?.value
   } catch {}
 
-  const data = await getComprehensiveAnalytics(userId, cookieTz)
+  const data = await getComprehensiveAnalytics(userId, cookieTz, semesterId)
   return <AnalyticsView data={data} />
 }
 
-export default async function AnalyticsPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+export default async function AnalyticsPage(props: {
+  searchParams: Promise<{ semester?: string }>
+}) {
+  const searchParams = await props.searchParams
+  const user = await getCachedUser()
 
   if (!user) {
     redirect('/login')
@@ -42,7 +47,7 @@ export default async function AnalyticsPage() {
       />
 
       <Suspense fallback={<AnalyticsSkeleton />}>
-        <AnalyticsContent userId={user.id} />
+        <AnalyticsContent userId={user.id} semesterId={searchParams.semester} />
       </Suspense>
     </div>
   )

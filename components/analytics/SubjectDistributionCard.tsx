@@ -55,9 +55,9 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
 
   return (
     <>
-      <div id="subject-distribution" className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col h-full space-y-4">
+      <div id="subject-distribution" className="bg-white dark:bg-(--surface) border border-slate-200/80 dark:border-(--border-subtle) rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col h-full space-y-4">
         {/* Header with Create Category Button */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-(--border-subtle)">
           <div className="flex items-center gap-2">
             <span className="text-lg">🏷️</span>
             <div>
@@ -78,13 +78,13 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
                 setSuccess(null)
                 setShowCreateModal(true)
               }}
-              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 px-2.5 py-1 rounded-xl transition-colors cursor-pointer flex items-center gap-1"
+              className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 px-2.5 py-1 rounded-xl transition-colors cursor-pointer flex items-center gap-1"
             >
               <span>+ Category</span>
             </button>
 
             {data.mostStudiedSubject && (
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hidden sm:inline-block">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-(--surface-raised) text-slate-700 dark:text-slate-300 hidden sm:inline-block">
                 Top: {data.mostStudiedSubject}
               </span>
             )}
@@ -93,7 +93,7 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
 
         {/* Content */}
         {!data.hasData || data.categories.length === 0 ? (
-          <div className="text-center py-6 px-4 bg-slate-50/60 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2">
+          <div className="text-center py-6 px-4 bg-slate-50/60 dark:bg-(--surface-raised)/30 border border-dashed border-slate-200 dark:border-(--border-subtle) rounded-2xl space-y-2">
             <div className="text-2xl">🔖</div>
             <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
               No subject tags yet
@@ -105,7 +105,7 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
               <button
                 type="button"
                 onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3.5 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 px-3.5 py-1.5 rounded-xl shadow-xs transition-colors cursor-pointer"
               >
                 <span>+ Create Your First Category</span>
               </button>
@@ -114,17 +114,17 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
         ) : (
           <div className="space-y-3">
             {/* Multi-segment Progress Bar with Interactive Hover */}
-            <div className="w-full h-3.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex p-0.5 border border-slate-200/60 dark:border-slate-700/60">
+            <div className="w-full h-3.5 rounded-full bg-slate-100 dark:bg-(--surface-raised) overflow-hidden flex p-0.5 border border-slate-200/60 dark:border-(--border-subtle)">
               {data.categories.map((cat) => (
                 <div
-                  key={cat.name}
+                  key={cat.id || cat.name}
                   style={{
                     width: `${cat.percentage}%`,
                     backgroundColor: cat.color,
                   }}
                   onMouseEnter={() => setHoveredCategory(cat.name)}
                   onMouseLeave={() => setHoveredCategory(null)}
-                  className={`h-full first:rounded-l-full last:rounded-r-full transition-all duration-300 cursor-pointer ${
+                  className={`h-full first:rounded-l-full last:rounded-r-full transition-all duration-[var(--duration-slow)] [transition-timing-function:var(--ease-smooth-out)] cursor-pointer ${
                     hoveredCategory === cat.name ? 'brightness-125 scale-y-110 z-10' : ''
                   }`}
                   title={`${cat.name}: ${cat.percentage}% (${cat.count} items)`}
@@ -136,14 +136,14 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
               {data.categories.map((cat) => (
                 <Link
-                  key={cat.name}
+                  key={cat.id || cat.name}
                   href={`/resources?category=${encodeURIComponent(cat.name.toLowerCase())}`}
                   onMouseEnter={() => setHoveredCategory(cat.name)}
                   onMouseLeave={() => setHoveredCategory(null)}
                   className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all ${
                     hoveredCategory === cat.name
-                      ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800/80 shadow-xs'
-                      : 'bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-100/70 dark:hover:bg-slate-800/70'
+                      ? 'bg-purple-50/70 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800/80 shadow-xs'
+                      : 'bg-slate-50/70 dark:bg-(--surface-raised)/40 border-slate-200/50 dark:border-(--border-subtle) hover:bg-slate-100/70 dark:hover:bg-(--surface-raised)/70'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -156,8 +156,13 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
                       {cat.name}
                     </span>
                   </div>
-                  <div className="text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">
-                    {cat.percentage}% <span className="font-normal text-[11px]">({cat.count})</span>
+                  <div className="text-right shrink-0">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {cat.formattedStudyTime || `${cat.percentage}%`}
+                    </div>
+                    <div className="text-[10.5px] text-slate-500 dark:text-slate-400">
+                      {cat.percentage}% <span className="font-normal">({cat.count} items)</span>
+                    </div>
                   </div>
                 </Link>
               ))}
@@ -168,9 +173,9 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
 
       {/* Create Category Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-[var(--duration-fast)] [animation-timing-function:var(--ease-smooth-out)]">
+          <div className="bg-white dark:bg-(--surface) border border-slate-200 dark:border-(--border-subtle) rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-(--border-subtle)">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🏷️</span>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -180,7 +185,7 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm font-bold cursor-pointer"
+                className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-(--surface-raised) flex items-center justify-center text-sm font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -212,7 +217,7 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Operating Systems, Machine Learning..."
                   disabled={isPending}
-                  className="w-full text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                  className="w-full text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-(--surface-raised) border border-slate-200 dark:border-(--border-subtle) rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-hidden"
                 />
               </div>
 
@@ -228,7 +233,7 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
                   onChange={(e) => setIcon(e.target.value)}
                   placeholder="e.g. 🖥️, 🧠, ⚡"
                   disabled={isPending}
-                  className="w-full text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                  className="w-full text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-(--surface-raised) border border-slate-200 dark:border-(--border-subtle) rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-hidden"
                 />
               </div>
 
@@ -243,7 +248,7 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Topics, courses, or notes under this category..."
                   disabled={isPending}
-                  className="w-full text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden resize-none"
+                  className="w-full text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-(--surface-raised) border border-slate-200 dark:border-(--border-subtle) rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-hidden resize-none"
                 />
               </div>
 
@@ -259,7 +264,7 @@ export default function SubjectDistributionCard({ data }: SubjectDistributionCar
                 <button
                   type="submit"
                   disabled={isPending || !name.trim()}
-                  className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-xl transition-colors cursor-pointer shadow-xs"
+                  className="px-5 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 rounded-xl transition-colors cursor-pointer shadow-xs"
                 >
                   {isPending ? 'Creating...' : 'Create Category'}
                 </button>

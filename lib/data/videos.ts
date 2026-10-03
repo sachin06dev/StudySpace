@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { YoutubeVideoMetadata } from '@/lib/youtube/client'
 
 export type VideoStatus = 'saved' | 'in_progress' | 'completed' | 'not_started'
@@ -45,9 +46,10 @@ export interface VideosPageData {
  * Finds or inserts a YouTube video in the global catalog.
  */
 export async function findOrCreateYoutubeVideo(
-  metadata: YoutubeVideoMetadata
+  metadata: YoutubeVideoMetadata,
+  client?: SupabaseClient
 ): Promise<YoutubeVideo> {
-  const supabase = await createClient()
+  const supabase = client || (await createClient())
 
   const { data: existing, error: findError } = await supabase
     .from('youtube_videos')
@@ -99,9 +101,10 @@ export async function findOrCreateYoutubeVideo(
  */
 export async function saveVideoForUser(
   userId: string,
-  videoId: string
+  videoId: string,
+  client?: SupabaseClient
 ): Promise<{ savedVideo: SavedVideo; isNew: boolean }> {
-  const supabase = await createClient()
+  const supabase = client || (await createClient())
 
   const { data: existing, error: findError } = await supabase
     .from('saved_videos')

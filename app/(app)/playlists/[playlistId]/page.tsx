@@ -43,6 +43,48 @@ export default async function PlaylistDetailPage({ params }: PlaylistDetailPageP
     notFound()
   }
 
+  // Fetch all timestamp notes across all lessons in this playlist
+  const videoIds = playlistData.items.map((i) => i.video_id)
+  let playlistNotes: Array<{
+    id: string
+    user_id: string
+    video_id: string
+    timestamp_seconds: number
+    content: string
+    created_at: string
+    updated_at: string
+    video: {
+      id: string
+      youtube_video_id: string
+      title: string
+      channel_name: string | null
+      thumbnail_url: string | null
+      duration_seconds: number | null
+    } | null
+    savedVideoId?: string | null
+  }> = []
+
+  if (videoIds.length > 0) {
+    const { data: nData } = await supabase
+      .from('video_timestamp_notes')
+      .select('*, video:youtube_videos(*)')
+      .eq('user_id', user.id)
+      .in('video_id', videoIds)
+      .order('timestamp_seconds', { ascending: true })
+
+    if (nData) {
+      const videoToSavedIdMap = new Map<string, string>()
+      playlistData.items.forEach((item) => {
+        videoToSavedIdMap.set(item.video_id, item.savedVideo.id)
+      })
+
+      playlistNotes = nData.map((note) => ({
+        ...note,
+        savedVideoId: videoToSavedIdMap.get(note.video_id) || null,
+      }))
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Back Link */}
@@ -58,7 +100,11 @@ export default async function PlaylistDetailPage({ params }: PlaylistDetailPageP
         </Link>
       </div>
 
-      <PlaylistDetailView playlistData={playlistData} playlistId={playlistId} />
+      <PlaylistDetailView
+        playlistData={playlistData}
+        playlistId={playlistId}
+        playlistNotes={playlistNotes}
+      />
     </div>
   )
 }
