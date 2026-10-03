@@ -1,16 +1,21 @@
 <div align="center">
 
-  <img src="public/branding/studyspace-logo-horizontal.png" alt="StudySpace Logo" width="380" />
+  <img src="docs/assets/studyspace-logo-readme.png" alt="StudySpace Logo" width="380" />
 
-  <p><strong>The unified academic workspace and learning ecosystem for students.</strong></p>
+  <p><strong>Your semester, finally in one place.</strong></p>
 
   <p>
-    Timetable scheduling • Attendance intelligence • AI timetable scanner • Lecture hub with timestamped notes • Pomodoro focus suite • Private document vault • 365-day study analytics • Native Android companion
+    An academic workspace for students that brings together timetable scheduling, attendance intelligence, lecture tracking with timestamped notes, focus timers, and course documents into a single synchronized operating system.
+  </p>
+
+  <p>
+    <a href="https://studyspace4u.vercel.app"><strong>🌐 Live Demo</strong></a> &nbsp;&nbsp;•&nbsp;&nbsp;
+    <a href="https://studyspace4u.vercel.app/api/download/android"><strong>📱 Download Android</strong></a>
   </p>
 
   <p>
     <a href="https://studyspace4u.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-studyspace4u.vercel.app-7c3aed?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" /></a>
-    <a href="https://github.com/sachin06dev/StudySpace/releases"><img src="https://img.shields.io/badge/Android_APK-v1.1.6-3b82f6?style=for-the-badge&logo=android&logoColor=white" alt="Android APK" /></a>
+    <a href="https://studyspace4u.vercel.app/api/download/android"><img src="https://img.shields.io/badge/Download_Android-APK-02569B?style=for-the-badge&logo=android&logoColor=white" alt="Download Android" /></a>
   </p>
 
   <p>
@@ -121,6 +126,14 @@ StudySpace bridges the gap between daily university logistics and deep, focused 
                        (Strict Row Level Security &
                           Realtime CDC Replication)
 ```
+
+---
+
+## 📱 Android App
+
+StudySpace is also available as an Android application for studying on the go. Built as an offline-first mobile companion, it features on-device SQLite caching, instant haptic attendance marking, background synchronization, and local timetable notification alerts.
+
+👉 **[Download StudySpace for Android](https://studyspace4u.vercel.app/api/download/android)**
 
 ---
 
@@ -424,7 +437,7 @@ For detailed production build and signing instructions, see [`docs/android-relea
 | `npm run build` | Compiles optimized Next.js production build |
 | `npm run start` | Runs the compiled production server |
 | `npm run lint` | Runs ESLint across all TypeScript and React files |
-| `npx tsx scripts/verify-security.ts` | Runs the automated security invariant test suite |
+| `npm run security` | Runs automated defense-in-depth security invariants and secret scanning |
 | `npx tsx scripts/test-attendance.ts` | Runs attendance calculation unit tests |
 | `npx tsx scripts/test-edge-cases.ts` | Runs boundary condition tests for attendance math |
 
@@ -453,11 +466,12 @@ Contributions, bug reports, and feature proposals are welcome! Please read [`CON
 
 ---
 
-## Try StudySpace Live
+## Try StudySpace
 
-Experience the live application:
+Access the live ecosystem across web and Android:
 
-🔗 **[https://studyspace4u.vercel.app](https://studyspace4u.vercel.app)**
+- **🌐 Web**: [https://studyspace4u.vercel.app](https://studyspace4u.vercel.app)
+- **📱 Android**: [https://studyspace4u.vercel.app/api/download/android](https://studyspace4u.vercel.app/api/download/android)
 
 ---
 
