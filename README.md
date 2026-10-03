@@ -457,15 +457,6 @@ Contributions, bug reports, and feature proposals are welcome! Please read [`CON
 
 ---
 
-## Realistic Roadmap
-
-- [ ] **Offline PDF Caching**: Encrypted local cache for frequently accessed course documents on Android.
-- [ ] **Native iOS Companion**: Port Flutter companion target to iOS with native Apple Sign-In and widgets.
-- [ ] **LMS Calendar Export**: One-click iCal/Google Calendar subscription URL for resolved class timetables.
-- [ ] **Canvas / Moodle Webhook Sync**: Optional assignment deadline importing from university LMS platforms.
-
----
-
 ## Try StudySpace
 
 Access the live ecosystem across web and Android:
