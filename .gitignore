@@ -48,6 +48,34 @@ next-env.d.ts
 
 # IDEs and editors
 .idea/
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
+.aider-desk/
+.kilocode/
+
+# Flutter / Android
+**/android/local.properties
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.dart_tool/
+**/mobile/build/
+**/mobile/.packages
+**/.gradle/
+**/.kotlin/
+
+# Gradle wrapper (must be tracked)
+!**/android/gradlew
+!**/android/gradlew.bat
+!**/android/gradle/wrapper/gradle-wrapper.jar
+!**/android/gradle/wrapper/gradle-wrapper.properties
+mobile/dart_defines.json
+*.apk
+*.aab
+key.properties
+**/key.properties
+*.keystore
+*.jks
+*.base64.txt
+release-artifacts/
