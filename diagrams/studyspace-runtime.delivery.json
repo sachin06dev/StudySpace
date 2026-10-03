@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "51ad71d5-70bc-42eb-8deb-3f3c3c5bd7cb",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "d:\\studyspace_nextjs\\diagrams\\studyspace-runtime.architecture.json",
+  "output": "D:\\studyspace_nextjs\\diagrams\\studyspace-runtime.html",
+  "specification": {
+    "sha256": "3ac9c0a41993d4b878206ff59bc9b6ed9c2803127cc180202b8b2d749af55fb0",
+    "bytes": 9509
+  },
+  "artifact": {
+    "sha256": "4a1b89efcd3e1c417ab355cd0d3a1b8e677b1eda0f09069bd4dc732421f821a2",
+    "bytes": 782305
+  }
+}

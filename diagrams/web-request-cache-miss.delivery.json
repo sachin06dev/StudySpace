@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "68d1ba85-72e9-4be3-97dd-83e56aef1c00",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "d:\\studyspace_nextjs\\diagrams\\web-request-cache-miss.sequence.json",
+  "output": "D:\\studyspace_nextjs\\diagrams\\web-request-cache-miss.html",
+  "specification": {
+    "sha256": "71392b1faa11f3f7b061e3f6471761976527ed3d6a7569a6f380a2e298d59608",
+    "bytes": 4339
+  },
+  "artifact": {
+    "sha256": "070ed0d185e21ea14074c2abb839d5a76c9a26991c21bb83f80bba8f4b904ba7",
+    "bytes": 762705
+  }
+}

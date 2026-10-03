@@ -1,0 +1,346 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "StudySpace Runtime Architecture",
+    "subtitle": "Full-stack Next.js App Router, Flutter mobile client, Supabase backend, and external integrations",
+    "output": "diagrams/studyspace-runtime.html",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "repository": {
+      "url": "https://github.com/sachin06dev/studyspace_nextjs.git",
+      "revision": "18c0f95e6b593266ba451b37ea9b224a01a7bdb9",
+      "provider": "github"
+    },
+    "viewBox": [1120, 680]
+  },
+  "components": [
+    {
+      "id": "web_client",
+      "type": "frontend",
+      "label": "Web Client (Next.js)",
+      "sublabel": "React 19 / AppShell / Timer",
+      "brand": "next-js",
+      "pos": [50, 160],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "app/(app)/layout.tsx",
+          "line": 14,
+          "end_line": 47,
+          "label": "AppLayout & Shell"
+        },
+        {
+          "path": "lib/pomodoro/timerStore.tsx",
+          "line": 1,
+          "end_line": 40,
+          "label": "TimerProvider State"
+        }
+      ]
+    },
+    {
+      "id": "mobile_client",
+      "type": "frontend",
+      "label": "Mobile Client (Flutter)",
+      "sublabel": "Android / SQLite Offline Sync",
+      "icon": "frontend",
+      "pos": [50, 460],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "mobile/lib/main.dart",
+          "line": 16,
+          "end_line": 35,
+          "label": "Flutter Client Entry"
+        },
+        {
+          "path": "mobile/lib/core/supabase/supabase_client.dart",
+          "line": 1,
+          "end_line": 30,
+          "label": "Offline Auth Client"
+        }
+      ]
+    },
+    {
+      "id": "edge_middleware",
+      "type": "cloud",
+      "label": "Edge Middleware",
+      "sublabel": "Session Refresh & Guard",
+      "brand": "vercel",
+      "pos": [320, 160],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "middleware.ts",
+          "line": 4,
+          "end_line": 19,
+          "label": "NextRequest Middleware"
+        },
+        {
+          "path": "lib/supabase/middleware.ts",
+          "line": 4,
+          "end_line": 36,
+          "label": "Session Cookie Refresh"
+        }
+      ]
+    },
+    {
+      "id": "rsc_server_actions",
+      "type": "backend",
+      "label": "Server Actions & RSC",
+      "sublabel": "Mutations & Data Layer",
+      "icon": "backend",
+      "pos": [320, 290],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "lib/actions/attendance.ts",
+          "line": 1,
+          "end_line": 35,
+          "label": "Server Action Mutations"
+        },
+        {
+          "path": "lib/data/attendance.ts",
+          "line": 1,
+          "end_line": 35,
+          "label": "Data Access Layer"
+        }
+      ]
+    },
+    {
+      "id": "api_route_handlers",
+      "type": "backend",
+      "label": "API Route Handlers",
+      "sublabel": "Bearer Auth / Service Proxies",
+      "icon": "backend",
+      "pos": [320, 460],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "app/api/timetable/scan/route.ts",
+          "line": 1,
+          "end_line": 30,
+          "label": "Bearer Auth API Route"
+        },
+        {
+          "path": "app/api/youtube/video/route.ts",
+          "line": 1,
+          "end_line": 30,
+          "label": "YouTube Proxy Handler"
+        }
+      ]
+    },
+    {
+      "id": "supabase_auth",
+      "type": "security",
+      "label": "Supabase Auth",
+      "sublabel": "GoTrue / JWT / Cookies",
+      "brand": "supabase",
+      "pos": [590, 160],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "lib/supabase/server.ts",
+          "line": 4,
+          "end_line": 28,
+          "label": "SSR Auth Client"
+        },
+        {
+          "path": "lib/supabase/middleware.ts",
+          "line": 30,
+          "end_line": 36,
+          "label": "auth.getUser() Gate"
+        }
+      ]
+    },
+    {
+      "id": "supabase_db",
+      "type": "database",
+      "label": "PostgreSQL (Supabase)",
+      "sublabel": "15+ Tables / RLS Engine",
+      "brand": "postgresql",
+      "pos": [590, 290],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "supabase/migrations/20260913072331_create_attendance_system.sql",
+          "line": 1,
+          "end_line": 40,
+          "label": "Relational Schema & RLS"
+        }
+      ]
+    },
+    {
+      "id": "storage_vault",
+      "type": "cloud",
+      "label": "Cloudflare R2 / S3",
+      "sublabel": "Private Documents / Presigned",
+      "brand": "cloudflare",
+      "pos": [870, 360],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "lib/storage/r2.ts",
+          "line": 16,
+          "end_line": 45,
+          "label": "Cloudflare R2 Client"
+        },
+        {
+          "path": "app/api/documents/upload-url/route.ts",
+          "line": 1,
+          "end_line": 35,
+          "label": "Presigned URL Generator"
+        }
+      ]
+    },
+    {
+      "id": "youtube_api",
+      "type": "external",
+      "label": "YouTube Data API",
+      "sublabel": "Lecture Search & Metadata",
+      "brand": "youtube",
+      "pos": [870, 460],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "lib/youtube/client.ts",
+          "line": 1,
+          "end_line": 40,
+          "label": "YouTube Data v3 Client"
+        }
+      ]
+    },
+    {
+      "id": "gemini_vision",
+      "type": "external",
+      "label": "Gemini Vision AI",
+      "sublabel": "Timetable Multimodal OCR",
+      "brand": "google-gemini",
+      "pos": [870, 560],
+      "size": [170, 68],
+      "sources": [
+        {
+          "path": "lib/ai/timetableScanner.ts",
+          "line": 1,
+          "end_line": 40,
+          "label": "Gemini Vision OCR Service"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Client Presentation Tier",
+      "wraps": ["web_client", "mobile_client"],
+      "pad": 16
+    },
+    {
+      "kind": "security-group",
+      "label": "Next.js 16 Server Trust Boundary",
+      "wraps": ["edge_middleware", "rsc_server_actions", "api_route_handlers"],
+      "pad": 16
+    },
+    {
+      "kind": "region",
+      "label": "Supabase Managed Platform",
+      "wraps": ["supabase_auth", "supabase_db"],
+      "pad": 16
+    },
+    {
+      "kind": "region",
+      "label": "External Third-Party Services",
+      "wraps": ["storage_vault", "youtube_api", "gemini_vision"],
+      "pad": 16
+    }
+  ],
+  "connections": [
+    {
+      "id": "web-to-edge",
+      "from": "web_client",
+      "to": "edge_middleware",
+      "label": "HTTPS Session",
+      "variant": "emphasis"
+    },
+    {
+      "id": "edge-to-auth",
+      "from": "edge_middleware",
+      "to": "supabase_auth",
+      "label": "auth.getUser()",
+      "variant": "security"
+    },
+    {
+      "id": "edge-to-rsc",
+      "from": "edge_middleware",
+      "to": "rsc_server_actions",
+      "label": "Authorized RSC",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rsc-to-db",
+      "from": "rsc_server_actions",
+      "to": "supabase_db",
+      "label": "PostgreSQL RLS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "mobile-to-api",
+      "from": "mobile_client",
+      "to": "api_route_handlers",
+      "label": "Bearer REST / OCR",
+      "variant": "default"
+    },
+    {
+      "id": "api-to-storage",
+      "from": "api_route_handlers",
+      "to": "storage_vault",
+      "label": "Presigned URLs",
+      "variant": "dashed"
+    },
+    {
+      "id": "api-to-youtube",
+      "from": "api_route_handlers",
+      "to": "youtube_api",
+      "label": "Data API v3",
+      "variant": "default"
+    },
+    {
+      "id": "api-to-gemini",
+      "from": "api_route_handlers",
+      "to": "gemini_vision",
+      "label": "Multimodal OCR",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Primary Request & Mutation Path",
+      "items": [
+        "Web interactions trigger React Server Components (RSC) and Next.js Server Actions ('use server')",
+        "Edge Middleware updates Supabase session cookies and enforces auth guards on all matched routes",
+        "Server Actions query the Data Access Layer (lib/data/*) which talks directly to PostgreSQL with RLS (auth.uid() = user_id)",
+        "Mutations return structured result types and trigger revalidatePath() to refresh cached layouts"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Trust Boundaries & Secret Isolation",
+      "items": [
+        "Next.js Server Boundary strictly encapsulates upstream API secrets (YOUTUBE_API_KEY, GEMINI_API_KEY, R2_SECRET_ACCESS_KEY)",
+        "Browser and mobile apps never receive server credentials; third-party calls are brokered via API Route Handlers",
+        "PostgreSQL enforces database-level tenant isolation via Row Level Security (RLS) policies",
+        "Private study PDFs are secured using short-lived S3/R2 presigned upload and download URLs"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Cross-Platform & Offline Strategy",
+      "items": [
+        "Flutter mobile client operates offline-first using local SQLite persistence and an idempotent background sync queue",
+        "Mobile client calls Next.js API routes using Bearer token authentication verified via Supabase JWT",
+        "Attendance algorithms, bunk limits, and consistency scoring formulas are mathematically identical across Web and Mobile"
+      ]
+    }
+  ]
+}
